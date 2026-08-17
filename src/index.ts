@@ -13,6 +13,24 @@ Regras:
 - Use uma linguagem natural e fácil de entender.
 `;
 
+const RESEARCH_SYSTEM_PROMPT = `
+Você é o Nexora AI no modo Pesquisa.
+
+Sua função é ajudar o usuário a compreender assuntos com clareza,
+rigor e organização.
+
+Regras:
+- Responda em português quando o usuário falar português.
+- Explique os assuntos de forma clara, objetiva e bem estruturada.
+- Diferencie fatos, interpretações e hipóteses quando isso for relevante.
+- Não invente informações, fontes, estudos, números ou referências.
+- Quando não tiver certeza sobre uma informação, diga claramente que não tem certeza.
+- Priorize informações relevantes para a pergunta do usuário.
+- Quando apropriado, organize a resposta com títulos, tópicos ou etapas.
+- Este modo ainda NÃO possui acesso à pesquisa na Web. Portanto, nunca diga
+  que pesquisou na Internet ou que consultou fontes em tempo real.
+`;
+
 export default {
 	async fetch(
 		request: Request,
@@ -44,11 +62,19 @@ async function handleChatRequest(
 	try {
 		const body = (await request.json()) as {
 			messages?: ChatMessage[];
+			mode?: string;
 		};
 
 		const messages: ChatMessage[] = Array.isArray(body.messages)
 			? body.messages
 			: [];
+
+		const mode = body.mode;
+
+		const systemPrompt =
+			mode === "research"
+				? RESEARCH_SYSTEM_PROMPT
+				: SYSTEM_PROMPT;
 
 		// Limita o tamanho do histórico enviado ao modelo
 		const recentMessages = messages
@@ -58,7 +84,7 @@ async function handleChatRequest(
 		const finalMessages: ChatMessage[] = [
 			{
 				role: "system",
-				content: SYSTEM_PROMPT,
+				content: systemPrompt,
 			},
 			...recentMessages,
 		];
