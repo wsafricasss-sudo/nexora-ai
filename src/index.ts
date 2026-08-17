@@ -1,10 +1,8 @@
 import { Env, ChatMessage } from "./types";
 
-const MODEL_ID = "@cf/meta/llama-3.2-11b-vision-instruct";
+const TEXT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
+const VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
 
-/**
- * Regras gerais da Nexora AI
- */
 const BASE_SYSTEM_PROMPT = `
 Você é o Nexora AI, um assistente virtual inteligente, amigável e útil.
 
@@ -15,24 +13,18 @@ Regras gerais:
 - Quando não tiver certeza, diga claramente que não tem certeza.
 - Não apresente hipóteses como fatos.
 - Adapte a explicação ao nível de conhecimento do usuário.
-- Use exemplos quando ajudarem na compreensão.
+- Use exemplos quando ajudarem.
 - Quando for útil, organize a resposta com títulos, listas ou etapas.
-- Você também pode analisar imagens enviadas pelo usuário.
-- Quando receber uma imagem, descreva e analise somente o que realmente consegue observar.
-- Não invente detalhes que não estejam visíveis na imagem.
 `;
 
-/**
- * MODO ESTUDAR
- */
 const STUDY_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo ESTUDAR do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a aprender.
+Ajude o usuário a aprender e compreender.
 
-Foque especialmente em:
+Você pode ajudar com:
 - Matemática
 - Português
 - Literatura
@@ -46,54 +38,38 @@ Foque especialmente em:
 - Programação
 - Idiomas
 - Trabalhos escolares
-- Preparação para provas e exames
+- Exercícios
 - Resumos
 - Revisões
-- Exercícios
-- Explicações de conceitos
+- Preparação para provas
 - Técnicas de estudo
-- Organização dos estudos
-
-Quando o usuário enviar uma imagem:
-- Analise exercícios, textos, gráficos, tabelas, diagramas ou materiais escolares.
-- Explique o conteúdo da imagem.
-- Se houver um exercício, ajude a resolver passo a passo.
-- Se houver texto, explique ou resuma.
-- Se houver uma questão de prova, explique o raciocínio.
-- Se a imagem estiver ilegível, informe isso claramente.
 
 Comportamento:
 - Aja como um professor particular.
 - Explique assuntos difíceis de maneira simples.
-- Use exemplos práticos.
-- Ajude o usuário a entender, não apenas a receber a resposta.
-- Se o usuário não entender, tente explicar de outra maneira.
-- Pode criar exercícios para o usuário praticar.
-- Pode corrigir respostas do usuário.
-- Pode criar resumos e planos de estudo.
-- Adapte a explicação ao nível do usuário.
+- Mostre o raciocínio.
+- Use exemplos.
+- Ajude o usuário a aprender, não apenas a copiar respostas.
+- Pode corrigir exercícios e respostas.
+- Pode criar exercícios para praticar.
 
-Seu objetivo principal neste modo é ENSINAR.
+Se o usuário enviar uma imagem de uma questão, exercício, página ou conteúdo escolar:
+- Analise a imagem.
+- Leia o conteúdo visível.
+- Explique o que está sendo pedido.
+- Resolva ou ajude a resolver.
 `;
 
-/**
- * MODO NEGÓCIOS
- */
 const BUSINESS_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo NEGÓCIOS do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a criar,
-analisar e desenvolver negócios.
-
-Foque especialmente em:
+Ajude o usuário com:
 - Empreendedorismo
 - Ideias de negócios
-- Empresas
 - Startups
 - Marketing
-- Marketing digital
 - Vendas
 - Clientes
 - Público-alvo
@@ -105,101 +81,45 @@ Foque especialmente em:
 - Modelos de negócio
 - Precificação
 - Planejamento
-- Finanças empresariais
 - Custos
 - Receitas
 - Lucro
 - Crescimento
 - Negócios online
 - E-commerce
-- Tecnologia aplicada aos negócios
 - Inteligência artificial para empresas
 
-Quando o usuário enviar uma imagem:
-- Analise gráficos, tabelas, anúncios, logotipos, produtos,
-  páginas, documentos ou materiais relacionados a negócios.
-- Ajude a identificar problemas e oportunidades.
-- Analise anúncios e materiais de marketing.
-- Analise informações visíveis em tabelas ou gráficos.
-- Não invente números que não estejam presentes na imagem.
-
-Comportamento:
-- Aja como um consultor de negócios.
-- Seja prático e estratégico.
-- Ajude a transformar ideias em planos concretos.
-- Apresente etapas quando isso for útil.
-- Mostre vantagens, desvantagens e possíveis riscos.
-- Ajude a identificar clientes e público-alvo.
-- Ajude a criar estratégias de marketing e vendas.
-- Pode criar ideias de produtos, serviços, nomes e propostas.
-- Não invente estatísticas, valores de mercado ou informações financeiras.
-- Quando faltarem dados, diga quais informações seriam necessárias.
-
-Seu objetivo principal neste modo é AJUDAR A CRIAR E DESENVOLVER NEGÓCIOS.
+Se o usuário enviar uma imagem relacionada a um negócio:
+- Analise a imagem.
+- Explique o que consegue identificar.
+- Sugira melhorias quando fizer sentido.
+- Não invente informações que não estejam visíveis.
 `;
 
-/**
- * MODO PESQUISA
- *
- * IMPORTANTE:
- * Este modo ainda NÃO possui pesquisa na Web.
- */
 const RESEARCH_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo PESQUISA do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a compreender,
-organizar e analisar informações.
-
-Foque especialmente em:
-- Ciência
-- Tecnologia
-- Inteligência artificial
-- História
-- Geografia
-- Economia
-- Educação
-- Programação
-- Computação
-- Empresas
-- Conceitos
-- Estudos
-- Comparações
-- Análise de informações
-- Atualidades, quando possível com o conhecimento disponível no modelo
-
-Quando o usuário enviar uma imagem:
-- Analise documentos, gráficos, tabelas, diagramas,
-  fotografias, capturas de tela e outros conteúdos visuais.
-- Descreva o que consegue observar.
-- Identifique informações relevantes.
-- Faça comparações quando forem possíveis.
-- Diferencie claramente observação, interpretação e conclusão.
-- Se a imagem não tiver qualidade suficiente, informe isso.
-
-Comportamento:
-- Explique os assuntos de maneira organizada.
-- Diferencie fatos, hipóteses e opiniões quando isso for relevante.
-- Não invente fontes.
-- Não invente estudos.
-- Não invente números ou estatísticas.
-- Quando não tiver certeza, diga claramente.
-- Para assuntos complexos, divida a explicação em partes.
-- Quando apropriado, faça comparações.
-- Apresente primeiro uma resposta direta e depois os detalhes.
-- Organize respostas longas com títulos e tópicos.
+Ajude o usuário a:
+- Compreender informações.
+- Organizar informações.
+- Comparar informações.
+- Analisar conceitos.
+- Entender ciência e tecnologia.
+- Entender inteligência artificial.
+- Entender história e geografia.
+- Analisar conteúdos enviados pelo usuário.
 
 IMPORTANTE:
-Este modo ainda NÃO possui acesso à pesquisa na Web.
-Nunca diga que pesquisou na Internet ou consultou fontes em tempo real.
+Não diga que pesquisou na Internet se não tiver acesso real à Web.
 
-Seu objetivo principal neste modo é ANALISAR E EXPLICAR INFORMAÇÕES.
+Se o usuário enviar uma imagem:
+- Analise o conteúdo visível.
+- Explique gráficos, textos, objetos, documentos ou outros elementos quando possível.
+- Diferencie claramente o que está visível daquilo que é apenas uma hipótese.
 `;
 
-/**
- * Escolhe o prompt de acordo com o modo.
- */
 function getSystemPrompt(mode?: string): string {
 	switch (mode) {
 		case "study":
@@ -216,39 +136,6 @@ function getSystemPrompt(mode?: string): string {
 	}
 }
 
-/**
- * Mensagem multimodal aceita pelo modelo.
- */
-type VisionMessage = {
-	role: "system" | "user" | "assistant";
-	content:
-		| string
-		| Array<{
-				type: "text";
-				text: string;
-		  } | {
-				type: "image_url";
-				image_url: {
-					url: string;
-				};
-		  }>;
-};
-
-/**
- * Estrutura recebida pelo frontend.
- */
-type ChatRequestBody = {
-	messages?: Array<{
-		role: "user" | "assistant" | "system";
-		content?: string;
-		image?: string;
-	}>;
-	mode?: string;
-};
-
-/**
- * Servidor principal.
- */
 export default {
 	async fetch(
 		request: Request,
@@ -257,205 +144,112 @@ export default {
 	): Promise<Response> {
 		const url = new URL(request.url);
 
-		/**
-		 * API do chat
-		 */
 		if (url.pathname === "/api/chat") {
 			if (request.method !== "POST") {
 				return new Response("Method not allowed", {
 					status: 405,
-					headers: {
-						Allow: "POST",
-					},
 				});
 			}
 
 			return handleChatRequest(request, env);
 		}
 
-		/**
-		 * Frontend
-		 */
 		return env.ASSETS.fetch(request);
 	},
 } satisfies ExportedHandler<Env>;
 
-/**
- * Processa uma mensagem.
- */
 async function handleChatRequest(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
 	try {
-		const body =
-			(await request.json()) as ChatRequestBody;
+		const body = (await request.json()) as {
+			messages?: ChatMessage[];
+			mode?: string;
+			image?: string;
+		};
 
-		const messages = Array.isArray(body.messages)
+		const messages: ChatMessage[] = Array.isArray(body.messages)
 			? body.messages
 			: [];
 
 		const mode = body.mode;
+		const image = body.image;
 
-		const systemPrompt =
-			getSystemPrompt(mode);
+		const systemPrompt = getSystemPrompt(mode);
 
-		/**
-		 * Mantém somente as últimas 20 mensagens.
-		 */
-		const recentMessages =
-			messages
-				.filter(
-					(message) =>
-						message.role !== "system",
-				)
-				.slice(-20);
+		const recentMessages = messages
+			.filter((message) => message.role !== "system")
+			.slice(-20);
 
-		/**
-		 * Converte as mensagens para o formato
-		 * multimodal esperado pelo modelo.
-		 */
-		const finalMessages: VisionMessage[] = [
+		const finalMessages: ChatMessage[] = [
 			{
 				role: "system",
 				content: systemPrompt,
 			},
+			...recentMessages,
 		];
 
-		for (const message of recentMessages) {
-			/**
-			 * Mensagem com imagem.
-			 */
-			if (
-				typeof message.image === "string" &&
-				message.image.length > 0
-			) {
-				const content: Array<
-					| {
-							type: "text";
-							text: string;
-					  }
-					| {
-							type: "image_url";
-							image_url: {
-								url: string;
-							};
-					  }
-				> = [];
+		/*
+		 * Se existir imagem, usamos o modelo de visão.
+		 * Caso contrário, usamos o modelo normal de texto.
+		 */
+		if (image && typeof image === "string") {
+			const inputs = {
+				messages: finalMessages,
+				image,
+				max_tokens: 1024,
+				stream: true,
+			};
 
-				if (
-					typeof message.content ===
-						"string" &&
-					message.content.trim()
-				) {
-					content.push({
-						type: "text",
-						text: message.content,
-					});
-				} else {
-					content.push({
-						type: "text",
-						text: "Analise esta imagem e explique o que você consegue observar.",
-					});
-				}
+			const stream = await env.AI.run(
+				VISION_MODEL,
+				inputs,
+			);
 
-				/**
-				 * A imagem deve chegar como:
-				 *
-				 * data:image/jpeg;base64,...
-				 *
-				 * ou
-				 *
-				 * data:image/png;base64,...
-				 */
-				content.push({
-					type: "image_url",
-					image_url: {
-						url: message.image,
-					},
-				});
-
-				finalMessages.push({
-					role:
-						message.role === "assistant"
-							? "assistant"
-							: "user",
-					content,
-				});
-
-				continue;
-			}
-
-			/**
-			 * Mensagem normal de texto.
-			 */
-			finalMessages.push({
-				role:
-					message.role === "assistant"
-						? "assistant"
-						: "user",
-				content:
-					typeof message.content ===
-					"string"
-						? message.content
-						: "",
+			return new Response(stream, {
+				headers: {
+					"Content-Type":
+						"text/event-stream; charset=utf-8",
+					"Cache-Control": "no-cache",
+					Connection: "keep-alive",
+				},
 			});
 		}
 
-		/**
-		 * Chamada ao Workers AI.
-		 */
 		const inputs = {
 			messages: finalMessages,
 			max_tokens: 1024,
 			stream: true,
 		};
 
-		const stream =
-			await env.AI.run<
-				typeof MODEL_ID
-			>(
-				MODEL_ID,
-				inputs as Parameters<
-					typeof env.AI.run
-				>[1],
-			);
+		const stream = await env.AI.run(
+			TEXT_MODEL,
+			inputs,
+		);
 
-		return new Response(
-			stream as ReadableStream,
-			{
-				headers: {
-					"Content-Type":
-						"text/event-stream; charset=utf-8",
-
-					"Cache-Control":
-						"no-cache",
-
-					Connection:
-						"keep-alive",
-
-					"X-Content-Type-Options":
-						"nosniff",
-				},
+		return new Response(stream, {
+			headers: {
+				"Content-Type":
+					"text/event-stream; charset=utf-8",
+				"Cache-Control": "no-cache",
+				Connection: "keep-alive",
 			},
-		);
+		});
 	} catch (error) {
-		console.error(
-			"Nexora AI error:",
-			error,
-		);
+		console.error("Nexora AI error:", error);
 
 		return new Response(
 			JSON.stringify({
 				error:
-					"Não foi possível processar sua mensagem.",
+					error instanceof Error
+						? error.message
+						: "Não foi possível processar sua mensagem.",
 			}),
 			{
 				status: 500,
-
 				headers: {
-					"Content-Type":
-						"application/json",
+					"Content-Type": "application/json",
 				},
 			},
 		);
