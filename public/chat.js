@@ -1,6 +1,6 @@
 /**
  * Nexora AI — Chat Frontend
- * Conversas separadas por modo + histórico local
+ * Modos separados + histórico + imagens
  */
 
 // ============================================================
@@ -62,11 +62,13 @@ let currentConversationId = null;
 
 let isProcessing = false;
 
+let selectedImage = null;
+
 // ============================================================
 // ARMAZENAMENTO
 // ============================================================
 
-const STORAGE_KEY = "nexora_ai_conversations_v1";
+const STORAGE_KEY = "nexora_ai_conversations_v2";
 
 function loadConversations() {
 	try {
@@ -78,11 +80,7 @@ function loadConversations() {
 
 		const parsed = JSON.parse(saved);
 
-		if (!Array.isArray(parsed)) {
-			return [];
-		}
-
-		return parsed;
+		return Array.isArray(parsed) ? parsed : [];
 	} catch (error) {
 		console.error(
 			"Nexora: erro ao carregar histórico:",
@@ -108,16 +106,14 @@ function saveConversations() {
 }
 
 // ============================================================
-// ID DE CONVERSA
+// ID
 // ============================================================
 
 function createConversationId() {
 	return (
 		Date.now().toString(36) +
 		"-" +
-		Math.random()
-			.toString(36)
-			.slice(2, 10)
+		Math.random().toString(36).slice(2, 10)
 	);
 }
 
@@ -130,13 +126,9 @@ function createConversation(mode = currentMode) {
 
 	const conversation = {
 		id: createConversationId(),
-
 		mode,
-
 		title: "Nova conversa",
-
 		createdAt: Date.now(),
-
 		updatedAt: Date.now(),
 
 		messages: [
@@ -188,16 +180,12 @@ function deleteConversation(id) {
 			getConversationsByMode(currentMode)[0];
 
 		if (nextConversation) {
-			openConversation(
-				nextConversation.id,
-			);
+			openConversation(nextConversation.id);
 		} else {
 			const conversation =
 				createConversation(currentMode);
 
-			renderConversation(
-				conversation,
-			);
+			renderConversation(conversation);
 		}
 	}
 
@@ -210,24 +198,18 @@ function updateConversationTitle(
 ) {
 	if (
 		!conversation ||
-		!firstUserMessage
+		!firstUserMessage ||
+		conversation.title !== "Nova conversa"
 	) {
 		return;
 	}
 
-	if (conversation.title !== "Nova conversa") {
-		return;
-	}
-
-	let title =
-		firstUserMessage
-			.replace(/\s+/g, " ")
-			.trim();
+	let title = firstUserMessage
+		.replace(/\s+/g, " ")
+		.trim();
 
 	if (title.length > 45) {
-		title =
-			title.slice(0, 45).trim() +
-			"...";
+		title = title.slice(0, 45).trim() + "...";
 	}
 
 	conversation.title =
@@ -239,29 +221,22 @@ function updateConversationTitle(
 // ============================================================
 
 function ensureCurrentConversation() {
-	let conversation =
-		getCurrentConversation();
+	let conversation = getCurrentConversation();
 
 	if (
 		!conversation ||
 		conversation.mode !== currentMode
 	) {
 		const modeConversations =
-			getConversationsByMode(
-				currentMode,
-			);
+			getConversationsByMode(currentMode);
 
 		if (modeConversations.length > 0) {
-			conversation =
-				modeConversations[0];
-
+			conversation = modeConversations[0];
 			currentConversationId =
 				conversation.id;
 		} else {
 			conversation =
-				createConversation(
-					currentMode,
-				);
+				createConversation(currentMode);
 		}
 	}
 
@@ -269,7 +244,7 @@ function ensureCurrentConversation() {
 }
 
 // ============================================================
-// RENDER DA CONVERSA
+// RENDER
 // ============================================================
 
 function renderConversation(conversation) {
@@ -282,7 +257,8 @@ function renderConversation(conversation) {
 	for (const message of conversation.messages) {
 		addMessageToChat(
 			message.role,
-			message.content,
+			message.content || "",
+			message.image || null,
 		);
 	}
 
@@ -293,6 +269,7 @@ function renderConversation(conversation) {
 function addMessageToChat(
 	role,
 	content,
+	image = null,
 ) {
 	const messageEl =
 		document.createElement("div");
@@ -300,24 +277,253 @@ function addMessageToChat(
 	messageEl.className =
 		`message ${role}-message`;
 
-	const paragraph =
-		document.createElement("p");
+	if (image) {
+		const imageEl =
+			document.createElement("img");
 
-	paragraph.textContent =
-		content;
+		imageEl.src = image;
 
-	messageEl.appendChild(
-		paragraph,
-	);
+		imageEl.alt = "Imagem enviada";
 
-	chatMessages.appendChild(
-		messageEl,
-	);
+		imageEl.className =
+			"nexora-message-image";
+
+		messageEl.appendChild(imageEl);
+	}
+
+	if (content) {
+		const paragraph =
+			document.createElement("p");
+
+		paragraph.textContent = content;
+
+		messageEl.appendChild(paragraph);
+	}
+
+	chatMessages.appendChild(messageEl);
 
 	chatMessages.scrollTop =
 		chatMessages.scrollHeight;
 
 	return messageEl;
+}
+
+// ============================================================
+// IMAGENS
+// ============================================================
+
+function createImageInterface() {
+	if (
+		document.getElementById(
+			"nexora-image-controls",
+		)
+	) {
+		return;
+	}
+
+	const messageInput =
+		document.querySelector(".message-input");
+
+	if (!messageInput) {
+		console.error(
+			"Nexora: .message-input não encontrada.",
+		);
+
+		return;
+	}
+
+	const controls =
+		document.createElement("div");
+
+	controls.id =
+		"nexora-image-controls";
+
+	controls.innerHTML = `
+		<input
+			type="file"
+			id="nexora-image-input"
+			accept="image/jpeg,image/png,image/webp,image/gif"
+			hidden
+		>
+
+		<button
+			type="button"
+			id="nexora-image-button"
+			title="Enviar imagem"
+			aria-label="Enviar imagem"
+		>
+			📷
+		</button>
+
+		<div
+			id="nexora-image-preview"
+			class="nexora-image-preview"
+			hidden
+		>
+			<img id="nexora-preview-image" alt="Pré-visualização">
+
+			<button
+				type="button"
+				id="nexora-remove-image"
+				title="Remover imagem"
+				aria-label="Remover imagem"
+			>
+				×
+			</button>
+		</div>
+	`;
+
+	messageInput.insertBefore(
+		controls,
+		messageInput.firstChild,
+	);
+
+	const imageInput =
+		document.getElementById(
+			"nexora-image-input",
+		);
+
+	const imageButton =
+		document.getElementById(
+			"nexora-image-button",
+		);
+
+	const removeButton =
+		document.getElementById(
+			"nexora-remove-image",
+		);
+
+	imageButton.addEventListener(
+		"click",
+		() => {
+			if (isProcessing) {
+				return;
+			}
+
+			imageInput.click();
+		},
+	);
+
+	imageInput.addEventListener(
+		"change",
+		(event) => {
+			const file =
+				event.target.files?.[0];
+
+			if (!file) {
+				return;
+			}
+
+			handleImageSelection(file);
+		},
+	);
+
+	removeButton.addEventListener(
+		"click",
+		clearSelectedImage,
+	);
+}
+
+function handleImageSelection(file) {
+	if (!file.type.startsWith("image/")) {
+		alert("Por favor, escolha uma imagem válida.");
+		return;
+	}
+
+	/**
+	 * Limite inicial de 8 MB.
+	 */
+	const maxSize =
+		8 * 1024 * 1024;
+
+	if (file.size > maxSize) {
+		alert(
+			"A imagem é muito grande. Escolha uma imagem com até 8 MB.",
+		);
+
+		return;
+	}
+
+	const reader =
+		new FileReader();
+
+	reader.onload = () => {
+		const result =
+			reader.result;
+
+		if (
+			typeof result !== "string"
+		) {
+			return;
+		}
+
+		selectedImage = {
+			name: file.name,
+			type: file.type,
+			size: file.size,
+			data: result,
+		};
+
+		const preview =
+			document.getElementById(
+				"nexora-image-preview",
+			);
+
+		const previewImage =
+			document.getElementById(
+				"nexora-preview-image",
+			);
+
+		if (previewImage) {
+			previewImage.src =
+				result;
+		}
+
+		if (preview) {
+			preview.hidden = false;
+		}
+
+		userInput.focus();
+	};
+
+	reader.onerror = () => {
+		alert(
+			"Não foi possível carregar a imagem.",
+		);
+	};
+
+	reader.readAsDataURL(file);
+}
+
+function clearSelectedImage() {
+	selectedImage = null;
+
+	const imageInput =
+		document.getElementById(
+			"nexora-image-input",
+		);
+
+	const preview =
+		document.getElementById(
+			"nexora-image-preview",
+		);
+
+	const previewImage =
+		document.getElementById(
+			"nexora-preview-image",
+		);
+
+	if (imageInput) {
+		imageInput.value = "";
+	}
+
+	if (previewImage) {
+		previewImage.src = "";
+	}
+
+	if (preview) {
+		preview.hidden = true;
+	}
 }
 
 // ============================================================
@@ -336,8 +542,7 @@ function createHistoryPanel() {
 	const panel =
 		document.createElement("aside");
 
-	panel.id =
-		"nexora-history";
+	panel.id = "nexora-history";
 
 	panel.innerHTML = `
 		<div class="nexora-history-header">
@@ -400,7 +605,6 @@ function createHistoryPanel() {
 			align-items: center;
 			justify-content: space-between;
 			gap: 10px;
-
 			margin-bottom: 18px;
 		}
 
@@ -413,37 +617,27 @@ function createHistoryPanel() {
 		.nexora-new-chat {
 			width: 38px;
 			height: 38px;
-
 			border: none;
 			border-radius: 10px;
-
 			background: #38bdf8;
 			color: #062033;
-
 			font-size: 24px;
 			font-weight: 700;
-
 			cursor: pointer;
 		}
 
 		.nexora-history-item {
 			width: 100%;
-
 			display: flex;
 			align-items: center;
 			gap: 8px;
-
 			margin-bottom: 8px;
 			padding: 10px;
-
 			border: 1px solid #263a55;
 			border-radius: 10px;
-
 			background: #08111f;
 			color: #f8fafc;
-
 			text-align: left;
-
 			cursor: pointer;
 		}
 
@@ -461,29 +655,23 @@ function createHistoryPanel() {
 			overflow: hidden;
 			text-overflow: ellipsis;
 			white-space: nowrap;
-
 			font-size: 14px;
 		}
 
 		.nexora-history-date {
 			margin-top: 4px;
-
 			color: #94a3b8;
 			font-size: 11px;
 		}
 
 		.nexora-delete-chat {
 			flex: 0 0 auto;
-
 			width: 30px;
 			height: 30px;
-
 			border: none;
 			border-radius: 8px;
-
 			background: transparent;
 			color: #94a3b8;
-
 			cursor: pointer;
 		}
 
@@ -494,7 +682,6 @@ function createHistoryPanel() {
 
 		.nexora-history-empty {
 			padding: 20px 5px;
-
 			color: #94a3b8;
 			font-size: 13px;
 			line-height: 1.5;
@@ -502,30 +689,85 @@ function createHistoryPanel() {
 
 		.nexora-history-toggle {
 			position: fixed;
-
 			top: 15px;
 			left: 15px;
-
 			z-index: 10000;
-
 			width: 42px;
 			height: 42px;
-
 			border: 1px solid #263a55;
 			border-radius: 10px;
-
 			background: #0f1b2d;
 			color: #f8fafc;
-
 			font-size: 20px;
-
 			cursor: pointer;
 		}
 
-		@media (min-width: 901px) {
-			#nexora-history {
-				width: 300px;
-			}
+		.nexora-message-image {
+			display: block;
+			max-width: 100%;
+			max-height: 320px;
+			margin-bottom: 10px;
+			border-radius: 12px;
+			object-fit: contain;
+		}
+
+		#nexora-image-controls {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			flex: 0 0 auto;
+		}
+
+		#nexora-image-button {
+			width: 48px;
+			height: 48px;
+			border: 1px solid #263a55;
+			border-radius: 12px;
+			background: #08111f;
+			color: #f8fafc;
+			font-size: 21px;
+			cursor: pointer;
+		}
+
+		#nexora-image-button:hover {
+			border-color: #38bdf8;
+		}
+
+		.nexora-image-preview {
+			position: absolute;
+			bottom: 75px;
+			left: 12px;
+			display: flex;
+			align-items: flex-start;
+			gap: 5px;
+			padding: 6px;
+			border: 1px solid #263a55;
+			border-radius: 12px;
+			background: #0f1b2d;
+			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+		}
+
+		.nexora-image-preview img {
+			width: 80px;
+			height: 80px;
+			border-radius: 8px;
+			object-fit: cover;
+		}
+
+		#nexora-remove-image {
+			width: 25px;
+			height: 25px;
+			border: none;
+			border-radius: 50%;
+			background: #132238;
+			color: #f8fafc;
+			cursor: pointer;
+			font-size: 18px;
+			line-height: 1;
+		}
+
+		.message-input {
+			position: relative;
 		}
 
 		@media (max-width: 600px) {
@@ -533,61 +775,43 @@ function createHistoryPanel() {
 				width: 85vw;
 				max-width: 320px;
 			}
+
+			.nexora-message-image {
+				max-height: 260px;
+			}
 		}
 	`;
 
-	document.head.appendChild(
-		style,
-	);
+	document.head.appendChild(style);
 
 	const toggle =
 		document.createElement("button");
 
 	toggle.type = "button";
-
 	toggle.className =
 		"nexora-history-toggle";
+	toggle.title = "Abrir histórico";
+	toggle.textContent = "☰";
 
-	toggle.title =
-		"Abrir histórico";
-
-	toggle.textContent =
-		"☰";
-
-	document.body.appendChild(
-		toggle,
-	);
+	document.body.appendChild(toggle);
 
 	toggle.addEventListener(
 		"click",
 		() => {
-			panel.classList.toggle(
-				"open",
-			);
+			panel.classList.toggle("open");
 		},
 	);
 
 	panel
-		.querySelector(
-			".nexora-new-chat",
-		)
-		.addEventListener(
-			"click",
-			() => {
-				const conversation =
-					createConversation(
-						currentMode,
-					);
+		.querySelector(".nexora-new-chat")
+		.addEventListener("click", () => {
+			const conversation =
+				createConversation(currentMode);
 
-				renderConversation(
-					conversation,
-				);
-
-				renderHistory();
-
-				userInput.focus();
-			},
-		);
+			renderConversation(conversation);
+			renderHistory();
+			userInput.focus();
+		});
 }
 
 function renderHistory() {
@@ -621,9 +845,7 @@ function renderHistory() {
 			currentMode,
 		);
 
-	if (
-		modeConversations.length === 0
-	) {
+	if (modeConversations.length === 0) {
 		list.innerHTML = `
 			<div class="nexora-history-empty">
 				Nenhuma conversa neste modo.
@@ -633,14 +855,9 @@ function renderHistory() {
 		return;
 	}
 
-	for (
-		const conversation
-		of modeConversations
-	) {
+	for (const conversation of modeConversations) {
 		const item =
-			document.createElement(
-				"div",
-			);
+			document.createElement("div");
 
 		item.className =
 			"nexora-history-item";
@@ -649,23 +866,17 @@ function renderHistory() {
 			conversation.id ===
 			currentConversationId
 		) {
-			item.classList.add(
-				"active",
-			);
+			item.classList.add("active");
 		}
 
 		const content =
-			document.createElement(
-				"div",
-			);
+			document.createElement("div");
 
 		content.className =
 			"nexora-history-item-content";
 
 		const title =
-			document.createElement(
-				"div",
-			);
+			document.createElement("div");
 
 		title.className =
 			"nexora-history-title";
@@ -675,9 +886,7 @@ function renderHistory() {
 			"Nova conversa";
 
 		const date =
-			document.createElement(
-				"div",
-			);
+			document.createElement("div");
 
 		date.className =
 			"nexora-history-date";
@@ -691,19 +900,12 @@ function renderHistory() {
 		content.appendChild(date);
 
 		const deleteButton =
-			document.createElement(
-				"button",
-			);
+			document.createElement("button");
 
-		deleteButton.type =
-			"button";
-
+		deleteButton.type = "button";
 		deleteButton.className =
 			"nexora-delete-chat";
-
-		deleteButton.textContent =
-			"×";
-
+		deleteButton.textContent = "×";
 		deleteButton.title =
 			"Apagar conversa";
 
@@ -712,12 +914,11 @@ function renderHistory() {
 			(event) => {
 				event.stopPropagation();
 
-				const confirmed =
+				if (
 					window.confirm(
 						"Apagar esta conversa?",
-					);
-
-				if (confirmed) {
+					)
+				) {
 					deleteConversation(
 						conversation.id,
 					);
@@ -725,13 +926,8 @@ function renderHistory() {
 			},
 		);
 
-		item.appendChild(
-			content,
-		);
-
-		item.appendChild(
-			deleteButton,
-		);
+		item.appendChild(content);
+		item.appendChild(deleteButton);
 
 		item.addEventListener(
 			"click",
@@ -747,18 +943,14 @@ function renderHistory() {
 }
 
 function formatDate(timestamp) {
-	const date =
-		new Date(timestamp);
+	const date = new Date(timestamp);
 
-	return date.toLocaleString(
-		"pt-PT",
-		{
-			day: "2-digit",
-			month: "2-digit",
-			hour: "2-digit",
-			minute: "2-digit",
-		},
-	);
+	return date.toLocaleString("pt-PT", {
+		day: "2-digit",
+		month: "2-digit",
+		hour: "2-digit",
+		minute: "2-digit",
+	});
 }
 
 // ============================================================
@@ -768,8 +960,7 @@ function formatDate(timestamp) {
 function openConversation(id) {
 	const conversation =
 		conversations.find(
-			(item) =>
-				item.id === id,
+			(item) => item.id === id,
 		);
 
 	if (!conversation) {
@@ -782,11 +973,11 @@ function openConversation(id) {
 	currentMode =
 		conversation.mode;
 
+	clearSelectedImage();
+
 	updateModeButtons();
 
-	renderConversation(
-		conversation,
-	);
+	renderConversation(conversation);
 
 	renderHistory();
 
@@ -794,52 +985,35 @@ function openConversation(id) {
 }
 
 // ============================================================
-// NOVA CONVERSA AO MUDAR DE MODO
+// MUDAR MODO
 // ============================================================
 
 function switchMode(mode) {
-	if (!MODES[mode]) {
-		return;
-	}
-
-	if (isProcessing) {
+	if (!MODES[mode] || isProcessing) {
 		return;
 	}
 
 	currentMode = mode;
 
+	clearSelectedImage();
+
 	updateModeButtons();
 
-	/**
-	 * Ao mudar de modo, procuramos a conversa
-	 * mais recente daquele modo.
-	 *
-	 * Se não existir, criamos uma nova.
-	 */
 	const modeConversations =
-		getConversationsByMode(
-			currentMode,
-		);
+		getConversationsByMode(mode);
 
 	let conversation;
 
 	if (modeConversations.length > 0) {
-		conversation =
-			modeConversations[0];
+		conversation = modeConversations[0];
 	} else {
-		conversation =
-			createConversation(
-				currentMode,
-			);
+		conversation = createConversation(mode);
 	}
 
 	currentConversationId =
 		conversation.id;
 
-	renderConversation(
-		conversation,
-	);
-
+	renderConversation(conversation);
 	renderHistory();
 
 	userInput.focus();
@@ -847,106 +1021,68 @@ function switchMode(mode) {
 
 function updateModeButtons() {
 	const modeButtons =
-		document.querySelectorAll(
-			".mode",
-		);
+		document.querySelectorAll(".mode");
 
-	modeButtons.forEach(
-		(button) => {
-			const title =
-				button
-					.querySelector(
-						".mode-title",
-					)
-					?.textContent
-					?.trim();
+	modeButtons.forEach((button) => {
+		const title =
+			button
+				.querySelector(".mode-title")
+				?.textContent
+				?.trim();
 
-			let buttonMode = null;
+		let buttonMode = null;
 
-			if (
-				title === "ESTUDAR"
-			) {
-				buttonMode =
-					"study";
-			} else if (
-				title === "NEGÓCIOS"
-			) {
-				buttonMode =
-					"business";
-			} else if (
-				title === "PESQUISA"
-			) {
-				buttonMode =
-					"research";
-			}
+		if (title === "ESTUDAR") {
+			buttonMode = "study";
+		} else if (title === "NEGÓCIOS") {
+			buttonMode = "business";
+		} else if (title === "PESQUISA") {
+			buttonMode = "research";
+		}
 
-			if (
-				buttonMode ===
-				currentMode
-			) {
-				button.style.borderColor =
-					"var(--primary)";
+		if (buttonMode === currentMode) {
+			button.style.borderColor =
+				"var(--primary)";
 
-				button.style.background =
-					"var(--card-light)";
-			} else {
-				button.style.borderColor =
-					"";
-
-				button.style.background =
-					"";
-			}
-		},
-	);
+			button.style.background =
+				"var(--card-light)";
+		} else {
+			button.style.borderColor = "";
+			button.style.background = "";
+		}
+	});
 }
 
 // ============================================================
 // BOTÕES DOS MODOS
 // ============================================================
 
-const modeButtons =
-	document.querySelectorAll(
-		".mode",
-	);
-
-modeButtons.forEach(
-	(button) => {
+document
+	.querySelectorAll(".mode")
+	.forEach((button) => {
 		button.addEventListener(
 			"click",
 			() => {
 				const title =
 					button
-						.querySelector(
-							".mode-title",
-						)
+						.querySelector(".mode-title")
 						?.textContent
 						?.trim();
 
-				if (
-					title === "ESTUDAR"
-				) {
-					switchMode(
-						"study",
-					);
+				if (title === "ESTUDAR") {
+					switchMode("study");
 				} else if (
-					title ===
-					"NEGÓCIOS"
+					title === "NEGÓCIOS"
 				) {
-					switchMode(
-						"business",
-					);
+					switchMode("business");
 				} else if (
-					title ===
-					"PESQUISA"
+					title === "PESQUISA"
 				) {
-					switchMode(
-						"research",
-					);
+					switchMode("research");
 				}
 			},
 		);
-	},
-);
+	});
 
 // ============================================================
 // INPUT
@@ -955,12 +1091,10 @@ modeButtons.forEach(
 userInput.addEventListener(
 	"input",
 	function () {
-		this.style.height =
-			"auto";
+		this.style.height = "auto";
 
 		this.style.height =
-			this.scrollHeight +
-			"px";
+			this.scrollHeight + "px";
 	},
 );
 
@@ -970,20 +1104,19 @@ userInput.addEventListener(
 
 userInput.addEventListener(
 	"keydown",
-	(e) => {
+	(event) => {
 		if (
-			e.key === "Enter" &&
-			!e.shiftKey
+			event.key === "Enter" &&
+			!event.shiftKey
 		) {
-			e.preventDefault();
-
+			event.preventDefault();
 			sendMessage();
 		}
 	},
 );
 
 // ============================================================
-// BOTÃO ENVIAR
+// ENVIAR
 // ============================================================
 
 sendButton.addEventListener(
@@ -992,7 +1125,7 @@ sendButton.addEventListener(
 );
 
 // ============================================================
-// ENVIO DA MENSAGEM
+// ENVIO
 // ============================================================
 
 async function sendMessage() {
@@ -1000,9 +1133,13 @@ async function sendMessage() {
 		userInput.value.trim();
 
 	if (
-		message === "" ||
-		isProcessing
+		message === "" &&
+		!selectedImage
 	) {
+		return;
+	}
+
+	if (isProcessing) {
 		return;
 	}
 
@@ -1016,27 +1153,38 @@ async function sendMessage() {
 	isProcessing = true;
 
 	userInput.disabled = true;
-
 	sendButton.disabled = true;
+
+	const imageToSend =
+		selectedImage;
 
 	typingIndicator.classList.add(
 		"visible",
 	);
 
 	/**
-	 * Adiciona mensagem do usuário.
+	 * Guarda a mensagem localmente.
 	 */
-	conversation.messages.push({
+	const userMessage = {
 		role: "user",
-		content: message,
-	});
+		content:
+			message ||
+			"Analise esta imagem.",
+	};
 
-	/**
-	 * Cria título baseado na primeira pergunta.
-	 */
+	if (imageToSend) {
+		userMessage.image =
+			imageToSend.data;
+	}
+
+	conversation.messages.push(
+		userMessage,
+	);
+
 	updateConversationTitle(
 		conversation,
-		message,
+		message ||
+			"Imagem enviada",
 	);
 
 	conversation.updatedAt =
@@ -1046,19 +1194,20 @@ async function sendMessage() {
 
 	addMessageToChat(
 		"user",
-		message,
+		userMessage.content,
+		imageToSend
+			? imageToSend.data
+			: null,
 	);
 
 	userInput.value = "";
+	userInput.style.height = "auto";
 
-	userInput.style.height =
-		"auto";
+	clearSelectedImage();
 
 	try {
 		const assistantMessageEl =
-			document.createElement(
-				"div",
-			);
+			document.createElement("div");
 
 		assistantMessageEl.className =
 			"message assistant-message";
@@ -1079,40 +1228,48 @@ async function sendMessage() {
 			chatMessages.scrollHeight;
 
 		/**
-		 * Envia somente as mensagens
-		 * da conversa atual.
+		 * Envia a conversa atual.
 		 */
 		const response =
-			await fetch(
-				"/api/chat",
-				{
-					method: "POST",
+			await fetch("/api/chat", {
+				method: "POST",
 
-					headers: {
-						"Content-Type":
-							"application/json",
-					},
-
-					body:
-						JSON.stringify({
-							messages:
-								conversation.messages,
-
-							mode:
-								conversation.mode,
-						}),
+				headers: {
+					"Content-Type":
+						"application/json",
 				},
-			);
+
+				body: JSON.stringify({
+					messages:
+						conversation.messages,
+
+					mode:
+						conversation.mode,
+				}),
+			});
 
 		if (!response.ok) {
-			throw new Error(
-				"Failed to get response",
-			);
+			let errorMessage =
+				"Não foi possível obter resposta da Nexora.";
+
+			try {
+				const errorData =
+					await response.json();
+
+				if (errorData?.error) {
+					errorMessage =
+						errorData.error;
+				}
+			} catch {
+				// ignora erro de JSON
+			}
+
+			throw new Error(errorMessage);
 		}
 
 		if (!response.body) {
 			throw new Error(
-				"Response body is null",
+				"Resposta sem conteúdo.",
 			);
 		}
 
@@ -1123,9 +1280,7 @@ async function sendMessage() {
 			new TextDecoder();
 
 		let responseText = "";
-
 		let buffer = "";
-
 		let sawDone = false;
 
 		const flushAssistantText =
@@ -1146,146 +1301,57 @@ async function sendMessage() {
 			if (done) {
 				const parsed =
 					consumeSseEvents(
-						buffer +
-							"\n\n",
+						buffer + "\n\n",
 					);
 
 				for (
 					const data
 					of parsed.events
 				) {
-					if (
-						data ===
-						"[DONE]"
-					) {
+					if (data === "[DONE]") {
+						sawDone = true;
 						break;
 					}
 
-					try {
-						const jsonData =
-							JSON.parse(
-								data,
-							);
-
-						let content =
-							"";
-
-						if (
-							typeof jsonData.response ===
-								"string" &&
-							jsonData.response
-								.length >
-								0
-						) {
-							content =
-								jsonData.response;
-						} else if (
-							jsonData
-								.choices?.[0]
-								?.delta
-								?.content
-						) {
-							content =
-								jsonData
-									.choices[0]
-									.delta
-									.content;
-						}
-
-						if (content) {
-							responseText +=
-								content;
-
+					processSseData(
+						data,
+						(text) => {
+							responseText += text;
 							flushAssistantText();
-						}
-					} catch (error) {
-						console.error(
-							"Nexora: erro ao interpretar SSE:",
-							error,
-							data,
-						);
-					}
+						},
+					);
 				}
 
 				break;
 			}
 
 			buffer +=
-				decoder.decode(
-					value,
-					{
-						stream: true,
-					},
-				);
+				decoder.decode(value, {
+					stream: true,
+				});
 
 			const parsed =
-				consumeSseEvents(
-					buffer,
-				);
+				consumeSseEvents(buffer);
 
-			buffer =
-				parsed.buffer;
+			buffer = parsed.buffer;
 
 			for (
 				const data
 				of parsed.events
 			) {
-				if (
-					data ===
-					"[DONE]"
-				) {
-					sawDone =
-						true;
-
+				if (data === "[DONE]") {
+					sawDone = true;
 					buffer = "";
-
 					break;
 				}
 
-				try {
-					const jsonData =
-						JSON.parse(
-							data,
-						);
-
-					let content =
-						"";
-
-					if (
-						typeof jsonData.response ===
-							"string" &&
-						jsonData.response
-							.length >
-							0
-					) {
-						content =
-							jsonData.response;
-					} else if (
-						jsonData
-							.choices?.[0]
-							?.delta
-							?.content
-					) {
-						content =
-							jsonData
-								.choices[0]
-								.delta
-								.content;
-					}
-
-					if (content) {
-						responseText +=
-							content;
-
+				processSseData(
+					data,
+					(text) => {
+						responseText += text;
 						flushAssistantText();
-					}
-				} catch (error) {
-					console.error(
-						"Nexora: erro ao interpretar SSE:",
-						error,
-						data,
-					);
-				}
+					},
+				);
 			}
 
 			if (sawDone) {
@@ -1293,22 +1359,11 @@ async function sendMessage() {
 			}
 		}
 
-		/**
-		 * Guarda a resposta no chat atual.
-		 */
-		if (
-			responseText.length >
-			0
-		) {
-			conversation.messages.push(
-				{
-					role:
-						"assistant",
-
-					content:
-						responseText,
-				},
-			);
+		if (responseText.length > 0) {
+			conversation.messages.push({
+				role: "assistant",
+				content: responseText,
+			});
 
 			conversation.updatedAt =
 				Date.now();
@@ -1323,9 +1378,27 @@ async function sendMessage() {
 			error,
 		);
 
+		/**
+		 * Remove o balão vazio da resposta
+		 * caso tenha ocorrido erro.
+		 */
+		const assistantMessage =
+			chatMessages.querySelector(
+				".assistant-message:last-child",
+			);
+
+		if (
+			assistantMessage &&
+			!assistantMessage.textContent.trim()
+		) {
+			assistantMessage.remove();
+		}
+
 		addMessageToChat(
 			"assistant",
-			"Não foi possível processar sua mensagem.",
+			error instanceof Error
+				? error.message
+				: "Não foi possível processar sua mensagem.",
 		);
 	} finally {
 		typingIndicator.classList.remove(
@@ -1334,11 +1407,8 @@ async function sendMessage() {
 
 		isProcessing = false;
 
-		userInput.disabled =
-			false;
-
-		sendButton.disabled =
-			false;
+		userInput.disabled = false;
+		sendButton.disabled = false;
 
 		userInput.focus();
 	}
@@ -1348,14 +1418,47 @@ async function sendMessage() {
 // SSE
 // ============================================================
 
-function consumeSseEvents(
-	buffer,
+function processSseData(
+	data,
+	onText,
 ) {
-	let normalized =
-		buffer.replace(
-			/\r/g,
-			"",
+	try {
+		const jsonData =
+			JSON.parse(data);
+
+		let content = "";
+
+		if (
+			typeof jsonData.response ===
+				"string" &&
+			jsonData.response.length > 0
+		) {
+			content =
+				jsonData.response;
+		} else if (
+			jsonData.choices?.[0]?.delta
+				?.content
+		) {
+			content =
+				jsonData.choices[0]
+					.delta.content;
+		}
+
+		if (content) {
+			onText(content);
+		}
+	} catch (error) {
+		console.error(
+			"Nexora: erro ao interpretar SSE:",
+			error,
+			data,
 		);
+	}
+}
+
+function consumeSseEvents(buffer) {
+	let normalized =
+		buffer.replace(/\r/g, "");
 
 	const events = [];
 
@@ -1363,9 +1466,7 @@ function consumeSseEvents(
 
 	while (
 		(eventEndIndex =
-			normalized.indexOf(
-				"\n\n",
-			)) !== -1
+			normalized.indexOf("\n\n")) !== -1
 	) {
 		const rawEvent =
 			normalized.slice(
@@ -1379,42 +1480,28 @@ function consumeSseEvents(
 			);
 
 		const lines =
-			rawEvent.split(
-				"\n",
-			);
+			rawEvent.split("\n");
 
 		const dataLines = [];
 
-		for (
-			const line of lines
-		) {
-			if (
-				line.startsWith(
-					"data:",
-				)
-			) {
+		for (const line of lines) {
+			if (line.startsWith("data:")) {
 				dataLines.push(
 					line
 						.slice(
-							"data:"
-								.length,
+							"data:".length,
 						)
 						.trimStart(),
 				);
 			}
 		}
 
-		if (
-			dataLines.length ===
-			0
-		) {
+		if (dataLines.length === 0) {
 			continue;
 		}
 
 		events.push(
-			dataLines.join(
-				"\n",
-			),
+			dataLines.join("\n"),
 		);
 	}
 
@@ -1431,6 +1518,8 @@ function consumeSseEvents(
 function initializeNexora() {
 	createHistoryPanel();
 
+	createImageInterface();
+
 	const currentModeConversations =
 		getConversationsByMode(
 			currentMode,
@@ -1439,16 +1528,13 @@ function initializeNexora() {
 	let conversation;
 
 	if (
-		currentModeConversations.length >
-		0
+		currentModeConversations.length > 0
 	) {
 		conversation =
 			currentModeConversations[0];
 	} else {
 		conversation =
-			createConversation(
-				currentMode,
-			);
+			createConversation(currentMode);
 	}
 
 	currentConversationId =
@@ -1456,9 +1542,7 @@ function initializeNexora() {
 
 	updateModeButtons();
 
-	renderConversation(
-		conversation,
-	);
+	renderConversation(conversation);
 
 	renderHistory();
 
