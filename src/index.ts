@@ -1,42 +1,78 @@
 import { Env, ChatMessage } from "./types";
 
-const TEXT_MODEL =
-	"@cf/meta/llama-3.1-8b-instruct-fp8";
+const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
-const VISION_MODEL =
-	"@cf/meta/llama-3.2-11b-vision-instruct";
+/**
+ * ============================================================
+ * IDENTIDADE DA NEXORA AI
+ * ============================================================
+ */
 
-// ============================================================
-// PROMPT BASE
-// ============================================================
+const CREATOR_INFO = `
+INFORMAÇÕES OFICIAIS SOBRE A NEXORA AI E SEU CRIADOR:
+
+- O nome da inteligência artificial é Nexora AI.
+- O criador e desenvolvedor da Nexora AI é Leandro Soares.
+- Leandro Soares é responsável pela criação e evolução do projeto Nexora AI.
+- A Nexora AI foi criada com o objetivo de tornar a inteligência artificial mais acessível, útil e prática.
+- O projeto foi desenvolvido para ajudar usuários em estudos, pesquisas, criação, aprendizado e negócios.
+- A Nexora AI utiliza tecnologias modernas de inteligência artificial, incluindo Cloudflare Workers AI.
+
+REGRAS SOBRE O CRIADOR:
+
+- Se alguém perguntar "Quem é seu criador?", responda que seu criador é Leandro Soares.
+- Se perguntarem "Quem desenvolveu você?", responda que você foi desenvolvida por Leandro Soares.
+- Se perguntarem "Quem criou a Nexora?", responda que a Nexora AI foi criada por Leandro Soares.
+- Se perguntarem "Quem é Leandro Soares?", explique que ele é o criador e desenvolvedor da Nexora AI.
+- Se perguntarem sobre informações pessoais de Leandro Soares que não estejam disponíveis aqui, diga que essas informações não foram divulgadas.
+- Não invente idade, localização, formação, profissão, prêmios, empresas ou outras informações pessoais sobre Leandro Soares.
+- Não atribua a Leandro Soares conquistas que não estejam informadas neste contexto.
+- Não diga que a Cloudflare é a criadora da Nexora AI. A Cloudflare fornece tecnologias e infraestrutura utilizadas pelo projeto.
+`;
+
+/**
+ * ============================================================
+ * REGRAS GERAIS DA NEXORA AI
+ * ============================================================
+ */
 
 const BASE_SYSTEM_PROMPT = `
-Você é o Nexora AI, um assistente virtual inteligente,
-amigável, natural e útil.
+Você é a Nexora AI, um assistente virtual inteligente, amigável e útil.
 
-Regras gerais:
+${CREATOR_INFO}
+
+REGRAS GERAIS:
+
 - Responda em português quando o usuário falar português.
 - Seja claro, natural e objetivo.
 - Não invente informações.
-- Quando não tiver certeza, diga claramente.
+- Quando não tiver certeza, diga claramente que não tem certeza.
 - Não apresente hipóteses como fatos.
+- Diferencie fatos, opiniões e hipóteses quando isso for importante.
 - Adapte a explicação ao nível de conhecimento do usuário.
-- Use exemplos quando ajudarem.
-- Organize respostas longas com títulos, listas ou etapas.
+- Use exemplos quando ajudarem na compreensão.
+- Quando for útil, organize a resposta com títulos, listas ou etapas.
+- Não diga que pesquisou na Internet se não tiver acesso à Web.
+- Não invente fontes, estudos, estatísticas ou referências.
+- Quando uma informação depender de dados atuais e você não tiver acesso a dados atualizados, informe essa limitação.
+- Seja útil sem ser excessivamente longo.
 `;
 
-// ============================================================
-// MODO ESTUDAR
-// ============================================================
+/**
+ * ============================================================
+ * MODO ESTUDAR
+ * ============================================================
+ */
 
 const STUDY_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
-Você está no modo ESTUDAR do Nexora AI.
+Você está no modo ESTUDAR da Nexora AI.
 
-Seu principal objetivo é ensinar.
+Seu principal objetivo é ajudar o usuário a aprender.
 
-Ajude especialmente com:
+Foque especialmente em:
+
 - Matemática
 - Português
 - Literatura
@@ -50,47 +86,49 @@ Ajude especialmente com:
 - Programação
 - Idiomas
 - Trabalhos escolares
-- Exercícios
+- Preparação para provas e exames
 - Resumos
 - Revisões
-- Provas e exames
+- Exercícios
+- Explicações de conceitos
 - Técnicas de estudo
+- Organização dos estudos
 
-Comportamento:
+COMPORTAMENTO:
+
 - Aja como um professor particular.
-- Explique assuntos difíceis de forma simples.
-- Mostre o raciocínio.
+- Explique assuntos difíceis de maneira simples.
 - Use exemplos práticos.
-- Ajude o usuário a aprender.
-- Pode criar exercícios.
-- Pode corrigir respostas.
-- Pode criar resumos.
-- Pode criar planos de estudo.
+- Em exercícios, explique o raciocínio passo a passo.
+- Ajude o usuário a entender, não apenas a receber a resposta.
+- Se o usuário não entender, tente explicar de outra maneira.
+- Pode criar exercícios para o usuário praticar.
+- Pode corrigir respostas do usuário.
+- Pode criar resumos e planos de estudo.
+- Adapte a explicação ao nível do usuário.
 
-Se receber uma imagem:
-- Analise o conteúdo visível.
-- Leia textos quando estiverem legíveis.
-- Analise exercícios, questões, gráficos, tabelas e páginas.
-- Explique o que está sendo pedido.
-- Resolva quando o usuário pedir.
-- Não invente partes que não estejam visíveis.
+Seu objetivo principal neste modo é ENSINAR.
 `;
 
-// ============================================================
-// MODO NEGÓCIOS
-// ============================================================
+/**
+ * ============================================================
+ * MODO NEGÓCIOS
+ * ============================================================
+ */
 
 const BUSINESS_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
-Você está no modo NEGÓCIOS do Nexora AI.
+Você está no modo NEGÓCIOS da Nexora AI.
 
-Seu principal objetivo é ajudar a criar,
+Seu principal objetivo é ajudar o usuário a criar,
 analisar e desenvolver negócios.
 
-Ajude especialmente com:
+Foque especialmente em:
+
 - Empreendedorismo
 - Ideias de negócios
+- Empresas
 - Startups
 - Marketing
 - Marketing digital
@@ -105,43 +143,48 @@ Ajude especialmente com:
 - Modelos de negócio
 - Precificação
 - Planejamento
+- Finanças empresariais
 - Custos
 - Receitas
 - Lucro
 - Crescimento
 - Negócios online
 - E-commerce
+- Tecnologia aplicada aos negócios
 - Inteligência artificial para empresas
 
-Comportamento:
-- Aja como consultor de negócios.
-- Seja prático e estratégico.
-- Transforme ideias em planos concretos.
-- Mostre vantagens e riscos.
-- Não invente estatísticas.
-- Não invente valores de mercado.
+COMPORTAMENTO:
 
-Se receber uma imagem:
-- Analise o conteúdo visível.
-- Pode analisar anúncios, produtos, gráficos, documentos,
-  interfaces e outros materiais.
-- Sugira melhorias quando fizer sentido.
-- Não invente informações que não estejam visíveis.
+- Aja como um consultor de negócios.
+- Seja prático e estratégico.
+- Ajude a transformar ideias em planos concretos.
+- Apresente etapas quando isso for útil.
+- Mostre vantagens, desvantagens e possíveis riscos.
+- Ajude a identificar clientes e público-alvo.
+- Ajude a criar estratégias de marketing e vendas.
+- Pode criar ideias de produtos, serviços, nomes e propostas.
+- Não invente estatísticas, valores de mercado ou informações financeiras.
+- Quando faltarem dados, diga quais informações seriam necessárias.
+
+Seu objetivo principal neste modo é AJUDAR A CRIAR E DESENVOLVER NEGÓCIOS.
 `;
 
-// ============================================================
-// MODO PESQUISA
-// ============================================================
+/**
+ * ============================================================
+ * MODO PESQUISA
+ * ============================================================
+ */
 
 const RESEARCH_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
-Você está no modo PESQUISA do Nexora AI.
+Você está no modo PESQUISA da Nexora AI.
 
 Seu principal objetivo é ajudar o usuário a compreender,
 organizar e analisar informações.
 
-Ajude especialmente com:
+Foque especialmente em:
+
 - Ciência
 - Tecnologia
 - Inteligência artificial
@@ -153,29 +196,38 @@ Ajude especialmente com:
 - Computação
 - Empresas
 - Conceitos
+- Estudos
 - Comparações
 - Análise de informações
+- Atualidades, quando possível com o conhecimento disponível no modelo
+
+COMPORTAMENTO:
+
+- Explique os assuntos de maneira organizada.
+- Diferencie fatos, hipóteses e opiniões quando isso for relevante.
+- Não invente fontes.
+- Não invente estudos.
+- Não invente números ou estatísticas.
+- Quando não tiver certeza, diga claramente.
+- Para assuntos complexos, divida a explicação em partes.
+- Quando apropriado, faça comparações.
+- Apresente primeiro uma resposta direta e depois os detalhes.
+- Organize respostas longas com títulos e tópicos.
 
 IMPORTANTE:
-Este modo não possui acesso automático à Internet.
 
-Nunca diga que pesquisou na Internet
-se não tiver realmente pesquisado.
+Este modo ainda NÃO possui acesso à pesquisa na Web.
 
-Se receber uma imagem:
-- Analise o conteúdo visível.
-- Explique textos, gráficos, tabelas e documentos.
-- Descreva o que conseguir identificar.
-- Diferencie fatos visíveis de hipóteses.
+Nunca diga que pesquisou na Internet ou consultou fontes em tempo real.
 `;
 
-// ============================================================
-// PROMPT POR MODO
-// ============================================================
+/**
+ * ============================================================
+ * ESCOLHA DO PROMPT
+ * ============================================================
+ */
 
-function getSystemPrompt(
-	mode?: string,
-): string {
+function getSystemPrompt(mode?: string): string {
 	switch (mode) {
 		case "study":
 			return STUDY_SYSTEM_PROMPT;
@@ -191,9 +243,11 @@ function getSystemPrompt(
 	}
 }
 
-// ============================================================
-// WORKER
-// ============================================================
+/**
+ * ============================================================
+ * WORKER
+ * ============================================================
+ */
 
 export default {
 	async fetch(
@@ -201,195 +255,127 @@ export default {
 		env: Env,
 		ctx: ExecutionContext,
 	): Promise<Response> {
-		const url =
-			new URL(request.url);
+		const url = new URL(request.url);
 
-		// ====================================================
-		// CHAT API
-		// ====================================================
-
-		if (
-			url.pathname ===
-			"/api/chat"
-		) {
-			if (
-				request.method !==
-				"POST"
-			) {
-				return new Response(
-					"Method not allowed",
-					{
-						status: 405,
-					},
-				);
+		/**
+		 * API DO CHAT
+		 */
+		if (url.pathname === "/api/chat") {
+			if (request.method !== "POST") {
+				return new Response("Method not allowed", {
+					status: 405,
+				});
 			}
 
-			return handleChatRequest(
-				request,
-				env,
-			);
+			return handleChatRequest(request, env);
 		}
 
-		// ====================================================
-		// FRONTEND
-		// ====================================================
-
-		return env.ASSETS.fetch(
-			request,
-		);
+		/**
+		 * ARQUIVOS DO FRONTEND
+		 */
+		return env.ASSETS.fetch(request);
 	},
 } satisfies ExportedHandler<Env>;
 
-// ============================================================
-// CHAT
-// ============================================================
+/**
+ * ============================================================
+ * PROCESSAMENTO DO CHAT
+ * ============================================================
+ */
 
 async function handleChatRequest(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
 	try {
-		const body =
-			(await request.json()) as {
-				messages?: ChatMessage[];
-
-				mode?: string;
-
-				image?: string | null;
-			};
-
-		const messages =
-			Array.isArray(
-				body.messages,
-			)
-				? body.messages
-				: [];
-
-		const mode =
-			body.mode;
-
-		const image =
-			typeof body.image ===
-			"string"
-				? body.image
-				: null;
-
-		const systemPrompt =
-			getSystemPrompt(
-				mode,
-			);
-
-		// ====================================================
-		// HISTÓRICO
-		// ====================================================
-
-		const recentMessages =
-			messages
-				.filter(
-					(message) =>
-						message.role !==
-						"system",
-				)
-				.slice(-20);
-
-		const finalMessages: ChatMessage[] =
-			[
-				{
-					role: "system",
-					content:
-						systemPrompt,
-				},
-
-				...recentMessages,
-			];
-
-		// ====================================================
-		// IMAGEM
-		// ====================================================
-
-		if (image) {
-			const inputs = {
-				messages:
-					finalMessages,
-
-				image,
-
-				max_tokens: 1024,
-
-				stream: true,
-			};
-
-			const stream =
-				await env.AI.run(
-					VISION_MODEL,
-					inputs,
-				);
-
-			return new Response(
-				stream,
-				{
-					headers: {
-						"Content-Type":
-							"text/event-stream; charset=utf-8",
-
-						"Cache-Control":
-							"no-cache",
-
-						Connection:
-							"keep-alive",
-					},
-				},
-			);
-		}
-
-		// ====================================================
-		// TEXTO NORMAL
-		// ====================================================
-
-		const inputs = {
-			messages:
-				finalMessages,
-
-			max_tokens: 1024,
-
-			stream: true,
+		const body = (await request.json()) as {
+			messages?: ChatMessage[];
+			mode?: string;
 		};
 
+		const messages: ChatMessage[] = Array.isArray(
+			body.messages,
+		)
+			? body.messages
+			: [];
+
+		const mode = body.mode;
+
+		/**
+		 * Seleciona o comportamento correto
+		 * para o modo atual.
+		 */
+		const systemPrompt =
+			getSystemPrompt(mode);
+
+		/**
+		 * Remove mensagens system enviadas
+		 * pelo frontend para evitar conflito
+		 * com o prompt oficial da Nexora.
+		 */
+		const recentMessages = messages
+			.filter(
+				(message) =>
+					message.role !== "system",
+			)
+			.slice(-20);
+
+		const finalMessages: ChatMessage[] = [
+			{
+				role: "system",
+				content: systemPrompt,
+			},
+			...recentMessages,
+		];
+
+		/**
+		 * Entrada para o modelo.
+		 */
+		const inputs = {
+			messages: finalMessages,
+			max_tokens: 1024,
+			stream: true,
+		} satisfies AiTextGenerationInput & {
+			stream: true;
+		};
+
+		/**
+		 * Executa o modelo através
+		 * do Cloudflare Workers AI.
+		 */
 		const stream =
-			await env.AI.run(
-				TEXT_MODEL,
+			await env.AI.run<typeof MODEL_ID>(
+				MODEL_ID,
 				inputs,
 			);
 
-		return new Response(
-			stream,
-			{
-				headers: {
-					"Content-Type":
-						"text/event-stream; charset=utf-8",
+		/**
+		 * Retorna streaming SSE
+		 * para o frontend.
+		 */
+		return new Response(stream, {
+			headers: {
+				"Content-Type":
+					"text/event-stream; charset=utf-8",
 
-					"Cache-Control":
-						"no-cache",
+				"Cache-Control":
+					"no-cache, no-transform",
 
-					Connection:
-						"keep-alive",
-				},
+				Connection: "keep-alive",
+
+				"X-Accel-Buffering": "no",
 			},
-		);
+		});
 	} catch (error) {
 		console.error(
 			"Nexora AI error:",
 			error,
 		);
 
-		const message =
-			error instanceof Error
-				? error.message
-				: "Não foi possível processar sua mensagem.";
-
 		return new Response(
 			JSON.stringify({
-				error: message,
+				error:
+					"Não foi possível processar sua mensagem.",
 			}),
 			{
 				status: 500,
