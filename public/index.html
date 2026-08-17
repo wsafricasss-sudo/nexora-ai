@@ -1,3 +1,5 @@
+"index.html" — Nexora AI
+
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -65,8 +67,7 @@
 		}
 
 		button,
-		textarea,
-		input {
+		textarea {
 			font-family: inherit;
 		}
 
@@ -214,113 +215,13 @@
 		}
 
 		/* =====================================================
-		   IMAGEM NAS MENSAGENS
-		===================================================== */
-
-		.message-image {
-			display: block;
-
-			width: min(100%, 300px);
-			max-height: 350px;
-
-			object-fit: contain;
-
-			margin-bottom: 10px;
-
-			border-radius: 12px;
-
-			border: 1px solid rgba(
-				255,
-				255,
-				255,
-				0.12
-			);
-		}
-
-		/* =====================================================
-		   PREVIEW DA IMAGEM
-		===================================================== */
-
-		.attachment-preview {
-			display: none;
-
-			align-items: center;
-			gap: 10px;
-
-			padding: 10px 12px;
-
-			border-top: 1px solid var(--border);
-
-			background: var(--card-light);
-		}
-
-		.attachment-preview.visible {
-			display: flex;
-		}
-
-		.attachment-preview img {
-			width: 58px;
-			height: 58px;
-
-			flex: 0 0 58px;
-
-			object-fit: cover;
-
-			border-radius: 10px;
-
-			border: 1px solid var(--border);
-		}
-
-		.attachment-preview-info {
-			flex: 1;
-			min-width: 0;
-		}
-
-		.attachment-preview-name {
-			overflow: hidden;
-			text-overflow: ellipsis;
-			white-space: nowrap;
-
-			font-size: 13px;
-		}
-
-		.attachment-preview-label {
-			margin-top: 3px;
-
-			color: var(--muted);
-			font-size: 11px;
-		}
-
-		.attachment-remove {
-			width: 36px;
-			height: 36px;
-
-			flex: 0 0 36px;
-
-			border: none;
-			border-radius: 9px;
-
-			background: transparent;
-			color: var(--muted);
-
-			font-size: 22px;
-
-			cursor: pointer;
-		}
-
-		.attachment-remove:hover {
-			background: var(--bg);
-			color: white;
-		}
-
-		/* =====================================================
 		   INPUT
 		===================================================== */
 
 		.message-input {
 			display: flex;
 			align-items: center;
-			gap: 8px;
+			gap: 9px;
 
 			padding: 12px;
 
@@ -328,37 +229,8 @@
 			background: var(--card-light);
 		}
 
-		.media-button {
-			width: 50px;
-			height: 50px;
-
-			flex: 0 0 50px;
-
-			border: 1px solid var(--border);
-			border-radius: 12px;
-
-			background: var(--bg);
-			color: var(--text);
-
-			font-size: 23px;
-
-			cursor: pointer;
-			transition: 0.2s;
-		}
-
-		.media-button:hover {
-			border-color: var(--primary);
-			background: var(--card);
-		}
-
-		.media-button:active {
-			transform: scale(0.96);
-		}
-
 		#user-input {
 			flex: 1;
-
-			min-width: 0;
 
 			min-height: 48px;
 			max-height: 150px;
@@ -388,7 +260,7 @@
 
 		#send-button {
 			min-width: 80px;
-			height: 50px;
+			height: 48px;
 
 			border: none;
 			border-radius: 12px;
@@ -398,6 +270,7 @@
 
 			font-weight: 700;
 			cursor: pointer;
+			transition: 0.2s;
 		}
 
 		#send-button:hover {
@@ -444,7 +317,6 @@
 		===================================================== */
 
 		@media (max-width: 600px) {
-
 			.app {
 				padding: 10px;
 			}
@@ -486,26 +358,8 @@
 				max-width: 92%;
 			}
 
-			.message-input {
-				gap: 6px;
-				padding: 8px;
-			}
-
-			.media-button {
-				width: 46px;
-				height: 46px;
-				flex-basis: 46px;
-				font-size: 21px;
-			}
-
 			#send-button {
 				min-width: 65px;
-				height: 46px;
-			}
-
-			#user-input {
-				min-height: 46px;
-				padding: 11px;
 			}
 		}
 	</style>
@@ -516,19 +370,13 @@
 	<div class="app">
 
 		<header>
+			<div class="logo">N</div>
 
-			<div class="logo">
-				N
-			</div>
-
-			<h1>
-				NEXORA AI
-			</h1>
+			<h1>NEXORA AI</h1>
 
 			<div class="subtitle">
 				Sua inteligência para estudar, criar e pesquisar.
 			</div>
-
 		</header>
 
 		<!-- =================================================
@@ -541,39 +389,24 @@
 				type="button"
 				class="mode"
 			>
-				<span class="mode-icon">
-					📚
-				</span>
-
-				<span class="mode-title">
-					ESTUDAR
-				</span>
+				<span class="mode-icon">📚</span>
+				<span class="mode-title">ESTUDAR</span>
 			</button>
 
 			<button
 				type="button"
 				class="mode"
 			>
-				<span class="mode-icon">
-					💼
-				</span>
-
-				<span class="mode-title">
-					NEGÓCIOS
-				</span>
+				<span class="mode-icon">💼</span>
+				<span class="mode-title">NEGÓCIOS</span>
 			</button>
 
 			<button
 				type="button"
 				class="mode"
 			>
-				<span class="mode-icon">
-					🔎
-				</span>
-
-				<span class="mode-title">
-					PESQUISA
-				</span>
+				<span class="mode-icon">🔎</span>
+				<span class="mode-title">PESQUISA</span>
 			</button>
 
 		</div>
@@ -590,62 +423,13 @@
 			></div>
 
 			<div
-				id="typing-indicator"
 				class="typing-indicator"
+				id="typing-indicator"
 			>
 				🤖 Nexora está a analisar...
 			</div>
 
-			<!-- PREVIEW -->
-			<div
-				id="attachment-preview"
-				class="attachment-preview"
-			></div>
-
-			<!-- =================================================
-			     INPUT
-			================================================== -->
-
 			<div class="message-input">
-
-				<!-- CÂMERA -->
-				<button
-					type="button"
-					id="camera-button"
-					class="media-button"
-					title="Tirar foto"
-					aria-label="Tirar foto"
-				>
-					📷
-				</button>
-
-				<!-- GALERIA -->
-				<button
-					type="button"
-					id="gallery-button"
-					class="media-button"
-					title="Escolher da galeria"
-					aria-label="Escolher da galeria"
-				>
-					🖼️
-				</button>
-
-				<!-- INPUT DA CÂMERA -->
-				<input
-					type="file"
-					id="camera-input"
-					accept="image/*"
-					capture="environment"
-					hidden
-				/>
-
-				<!-- INPUT DA GALERIA -->
-				<input
-					type="file"
-					id="gallery-input"
-					accept="image/*"
-					hidden
-				/>
 
 				<textarea
 					id="user-input"
@@ -675,3 +459,5 @@
 
 </body>
 </html>
+
+Agora é só substituir o conteúdo inteiro do teu "index.html" por este código, guardar e publicar novamente. Não precisas acrescentar nada no final.
