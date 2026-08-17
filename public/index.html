@@ -5,14 +5,58 @@
 
 	<meta
 		name="viewport"
-		content="width=device-width, initial-scale=1.0"
+		content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+	/>
+
+	<meta
+		name="theme-color"
+		content="#08111f"
+	/>
+
+	<meta
+		name="description"
+		content="Nexora AI — sua inteligência para estudar, criar e pesquisar."
+	/>
+
+	<meta
+		name="mobile-web-app-capable"
+		content="yes"
+	/>
+
+	<meta
+		name="apple-mobile-web-app-capable"
+		content="yes"
+	/>
+
+	<meta
+		name="apple-mobile-web-app-status-bar-style"
+		content="black-translucent"
+	/>
+
+	<meta
+		name="apple-mobile-web-app-title"
+		content="Nexora AI"
+	/>
+
+	<link
+		rel="manifest"
+		href="/manifest.json"
+	/>
+
+	<link
+		rel="icon"
+		type="image/png"
+		sizes="192x192"
+		href="/icon-192.png"
+	/>
+
+	<link
+		rel="apple-touch-icon"
+		sizes="192x192"
+		href="/icon-192.png"
 	/>
 
 	<title>Nexora AI</title>
-
-	<!-- PWA -->
-	<link rel="manifest" href="/manifest.json" />
-	<meta name="theme-color" content="#08111f" />
 
 	<style>
 		:root {
@@ -34,6 +78,12 @@
 			padding: 0;
 		}
 
+		html,
+		body {
+			width: 100%;
+			min-height: 100%;
+		}
+
 		body {
 			font-family:
 				-apple-system,
@@ -46,6 +96,17 @@
 			background: var(--bg);
 			color: var(--text);
 			min-height: 100vh;
+
+			-webkit-font-smoothing: antialiased;
+		}
+
+		button,
+		textarea {
+			font: inherit;
+		}
+
+		button {
+			-webkit-tap-highlight-color: transparent;
 		}
 
 		.app {
@@ -54,8 +115,6 @@
 			margin: auto;
 			padding: 20px;
 		}
-
-		/* HEADER */
 
 		header {
 			text-align: center;
@@ -96,8 +155,6 @@
 			font-size: 17px;
 		}
 
-		/* MODES */
-
 		.modes {
 			display: grid;
 			grid-template-columns: repeat(3, 1fr);
@@ -123,6 +180,11 @@
 			transform: translateY(-1px);
 		}
 
+		.mode.active {
+			border-color: var(--primary);
+			box-shadow: 0 0 0 1px var(--primary);
+		}
+
 		.mode-icon {
 			display: block;
 			font-size: 26px;
@@ -133,8 +195,6 @@
 			font-weight: 700;
 			font-size: 14px;
 		}
-
-		/* CHAT */
 
 		.chat-container {
 			display: flex;
@@ -155,6 +215,7 @@
 			flex: 1;
 			overflow-y: auto;
 			padding: 18px;
+			scroll-behavior: smooth;
 		}
 
 		.message {
@@ -184,8 +245,6 @@
 			border: 1px solid var(--border);
 			border-bottom-left-radius: 5px;
 		}
-
-		/* INPUT */
 
 		.message-input {
 			display: flex;
@@ -249,8 +308,6 @@
 			cursor: not-allowed;
 		}
 
-		/* LOADING */
-
 		.typing-indicator {
 			display: none;
 
@@ -264,8 +321,6 @@
 			display: block;
 		}
 
-		/* FOOTER */
-
 		footer {
 			text-align: center;
 			padding: 15px;
@@ -274,11 +329,13 @@
 			font-size: 12px;
 		}
 
-		/* MOBILE */
-
 		@media (max-width: 600px) {
 			.app {
 				padding: 10px;
+			}
+
+			header {
+				padding: 20px 8px;
 			}
 
 			h1 {
@@ -326,7 +383,6 @@
 	<div class="app">
 
 		<header>
-
 			<div class="logo">N</div>
 
 			<h1>NEXORA AI</h1>
@@ -334,50 +390,58 @@
 			<div class="subtitle">
 				Sua inteligência para estudar, criar e pesquisar.
 			</div>
-
 		</header>
-
-		<!-- MODOS DA NEXORA -->
 
 		<div class="modes">
 
-			<button class="mode" type="button">
+			<button
+				class="mode active"
+				data-mode="estudar"
+				type="button"
+			>
 				<span class="mode-icon">📚</span>
 				<span class="mode-title">ESTUDAR</span>
 			</button>
 
-			<button class="mode" type="button">
+			<button
+				class="mode"
+				data-mode="negocios"
+				type="button"
+			>
 				<span class="mode-icon">💼</span>
 				<span class="mode-title">NEGÓCIOS</span>
 			</button>
 
-			<button class="mode" type="button">
+			<button
+				class="mode"
+				data-mode="pesquisa"
+				type="button"
+			>
 				<span class="mode-icon">🔎</span>
 				<span class="mode-title">PESQUISA</span>
 			</button>
 
 		</div>
 
-		<!-- CHAT -->
-
 		<div class="chat-container">
 
-			<div id="chat-messages" class="chat-messages">
-
+			<div
+				id="chat-messages"
+				class="chat-messages"
+			>
 				<div class="message assistant-message">
-
 					<p>
 						Olá! 👋 Eu sou a Nexora AI.
 
-						Posso ajudar você a estudar,
-						desenvolver ideias de negócios
-						e pesquisar informações.
+						Você está no modo Estudar.
+
+						Posso ajudar com matérias,
+						explicações, exercícios,
+						resumos e preparação para provas.
 
 						Como posso ajudar?
 					</p>
-
 				</div>
-
 			</div>
 
 			<div
@@ -413,22 +477,32 @@
 
 	</div>
 
-	<script src="chat.js"></script>
+	<script src="/chat.js"></script>
 
-	<!-- Registo do Service Worker -->
 	<script>
+		/*
+		 * Registra o Service Worker.
+		 * Isto é o que permite que a Nexora
+		 * funcione como PWA/aplicativo.
+		 */
 		if ("serviceWorker" in navigator) {
-			window.addEventListener("load", () => {
-				navigator.serviceWorker.register("/sw.js")
-					.then(() => {
-						console.log("Nexora Service Worker ativo.");
-					})
-					.catch((error) => {
-						console.error(
-							"Erro ao registrar Service Worker:",
-							error
-						);
-					});
+			window.addEventListener("load", async () => {
+				try {
+					const registration =
+						await navigator.serviceWorker.register("/sw.js", {
+							scope: "/"
+						});
+
+					console.log(
+						"Nexora AI Service Worker registrado:",
+						registration.scope
+					);
+				} catch (error) {
+					console.error(
+						"Erro ao registrar o Service Worker:",
+						error
+					);
+				}
 			});
 		}
 	</script>
