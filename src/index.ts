@@ -1,30 +1,42 @@
 import { Env, ChatMessage } from "./types";
 
-const TEXT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8";
-const VISION_MODEL = "@cf/meta/llama-3.2-11b-vision-instruct";
+const TEXT_MODEL =
+	"@cf/meta/llama-3.1-8b-instruct-fp8";
+
+const VISION_MODEL =
+	"@cf/meta/llama-3.2-11b-vision-instruct";
+
+// ============================================================
+// PROMPT BASE
+// ============================================================
 
 const BASE_SYSTEM_PROMPT = `
-Você é o Nexora AI, um assistente virtual inteligente, amigável e útil.
+Você é o Nexora AI, um assistente virtual inteligente,
+amigável, natural e útil.
 
 Regras gerais:
 - Responda em português quando o usuário falar português.
 - Seja claro, natural e objetivo.
 - Não invente informações.
-- Quando não tiver certeza, diga claramente que não tem certeza.
+- Quando não tiver certeza, diga claramente.
 - Não apresente hipóteses como fatos.
 - Adapte a explicação ao nível de conhecimento do usuário.
 - Use exemplos quando ajudarem.
-- Quando for útil, organize a resposta com títulos, listas ou etapas.
+- Organize respostas longas com títulos, listas ou etapas.
 `;
+
+// ============================================================
+// MODO ESTUDAR
+// ============================================================
 
 const STUDY_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo ESTUDAR do Nexora AI.
 
-Ajude o usuário a aprender e compreender.
+Seu principal objetivo é ensinar.
 
-Você pode ajudar com:
+Ajude especialmente com:
 - Matemática
 - Português
 - Literatura
@@ -41,35 +53,47 @@ Você pode ajudar com:
 - Exercícios
 - Resumos
 - Revisões
-- Preparação para provas
+- Provas e exames
 - Técnicas de estudo
 
 Comportamento:
 - Aja como um professor particular.
-- Explique assuntos difíceis de maneira simples.
+- Explique assuntos difíceis de forma simples.
 - Mostre o raciocínio.
-- Use exemplos.
-- Ajude o usuário a aprender, não apenas a copiar respostas.
-- Pode corrigir exercícios e respostas.
-- Pode criar exercícios para praticar.
+- Use exemplos práticos.
+- Ajude o usuário a aprender.
+- Pode criar exercícios.
+- Pode corrigir respostas.
+- Pode criar resumos.
+- Pode criar planos de estudo.
 
-Se o usuário enviar uma imagem de uma questão, exercício, página ou conteúdo escolar:
-- Analise a imagem.
-- Leia o conteúdo visível.
+Se receber uma imagem:
+- Analise o conteúdo visível.
+- Leia textos quando estiverem legíveis.
+- Analise exercícios, questões, gráficos, tabelas e páginas.
 - Explique o que está sendo pedido.
-- Resolva ou ajude a resolver.
+- Resolva quando o usuário pedir.
+- Não invente partes que não estejam visíveis.
 `;
+
+// ============================================================
+// MODO NEGÓCIOS
+// ============================================================
 
 const BUSINESS_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo NEGÓCIOS do Nexora AI.
 
-Ajude o usuário com:
+Seu principal objetivo é ajudar a criar,
+analisar e desenvolver negócios.
+
+Ajude especialmente com:
 - Empreendedorismo
 - Ideias de negócios
 - Startups
 - Marketing
+- Marketing digital
 - Vendas
 - Clientes
 - Público-alvo
@@ -89,38 +113,69 @@ Ajude o usuário com:
 - E-commerce
 - Inteligência artificial para empresas
 
-Se o usuário enviar uma imagem relacionada a um negócio:
-- Analise a imagem.
-- Explique o que consegue identificar.
+Comportamento:
+- Aja como consultor de negócios.
+- Seja prático e estratégico.
+- Transforme ideias em planos concretos.
+- Mostre vantagens e riscos.
+- Não invente estatísticas.
+- Não invente valores de mercado.
+
+Se receber uma imagem:
+- Analise o conteúdo visível.
+- Pode analisar anúncios, produtos, gráficos, documentos,
+  interfaces e outros materiais.
 - Sugira melhorias quando fizer sentido.
 - Não invente informações que não estejam visíveis.
 `;
+
+// ============================================================
+// MODO PESQUISA
+// ============================================================
 
 const RESEARCH_SYSTEM_PROMPT = `
 ${BASE_SYSTEM_PROMPT}
 
 Você está no modo PESQUISA do Nexora AI.
 
-Ajude o usuário a:
-- Compreender informações.
-- Organizar informações.
-- Comparar informações.
-- Analisar conceitos.
-- Entender ciência e tecnologia.
-- Entender inteligência artificial.
-- Entender história e geografia.
-- Analisar conteúdos enviados pelo usuário.
+Seu principal objetivo é ajudar o usuário a compreender,
+organizar e analisar informações.
+
+Ajude especialmente com:
+- Ciência
+- Tecnologia
+- Inteligência artificial
+- História
+- Geografia
+- Economia
+- Educação
+- Programação
+- Computação
+- Empresas
+- Conceitos
+- Comparações
+- Análise de informações
 
 IMPORTANTE:
-Não diga que pesquisou na Internet se não tiver acesso real à Web.
+Este modo não possui acesso automático à Internet.
 
-Se o usuário enviar uma imagem:
+Nunca diga que pesquisou na Internet
+se não tiver realmente pesquisado.
+
+Se receber uma imagem:
 - Analise o conteúdo visível.
-- Explique gráficos, textos, objetos, documentos ou outros elementos quando possível.
-- Diferencie claramente o que está visível daquilo que é apenas uma hipótese.
+- Explique textos, gráficos, tabelas e documentos.
+- Descreva o que conseguir identificar.
+- Diferencie fatos visíveis de hipóteses.
 `;
 
-function getSystemPrompt(mode?: string): string {
+// ============================================================
+// PROMPT POR MODO
+// ============================================================
+
+function getSystemPrompt(
+	mode?: string,
+): string {
 	switch (mode) {
 		case "study":
 			return STUDY_SYSTEM_PROMPT;
@@ -136,120 +191,212 @@ function getSystemPrompt(mode?: string): string {
 	}
 }
 
+// ============================================================
+// WORKER
+// ============================================================
+
 export default {
 	async fetch(
 		request: Request,
 		env: Env,
 		ctx: ExecutionContext,
 	): Promise<Response> {
-		const url = new URL(request.url);
+		const url =
+			new URL(request.url);
 
-		if (url.pathname === "/api/chat") {
-			if (request.method !== "POST") {
-				return new Response("Method not allowed", {
-					status: 405,
-				});
+		// ====================================================
+		// CHAT API
+		// ====================================================
+
+		if (
+			url.pathname ===
+			"/api/chat"
+		) {
+			if (
+				request.method !==
+				"POST"
+			) {
+				return new Response(
+					"Method not allowed",
+					{
+						status: 405,
+					},
+				);
 			}
 
-			return handleChatRequest(request, env);
+			return handleChatRequest(
+				request,
+				env,
+			);
 		}
 
-		return env.ASSETS.fetch(request);
+		// ====================================================
+		// FRONTEND
+		// ====================================================
+
+		return env.ASSETS.fetch(
+			request,
+		);
 	},
 } satisfies ExportedHandler<Env>;
+
+// ============================================================
+// CHAT
+// ============================================================
 
 async function handleChatRequest(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
 	try {
-		const body = (await request.json()) as {
-			messages?: ChatMessage[];
-			mode?: string;
-			image?: string;
-		};
+		const body =
+			(await request.json()) as {
+				messages?: ChatMessage[];
 
-		const messages: ChatMessage[] = Array.isArray(body.messages)
-			? body.messages
-			: [];
+				mode?: string;
 
-		const mode = body.mode;
-		const image = body.image;
+				image?: string | null;
+			};
 
-		const systemPrompt = getSystemPrompt(mode);
+		const messages =
+			Array.isArray(
+				body.messages,
+			)
+				? body.messages
+				: [];
 
-		const recentMessages = messages
-			.filter((message) => message.role !== "system")
-			.slice(-20);
+		const mode =
+			body.mode;
 
-		const finalMessages: ChatMessage[] = [
-			{
-				role: "system",
-				content: systemPrompt,
-			},
-			...recentMessages,
-		];
+		const image =
+			typeof body.image ===
+			"string"
+				? body.image
+				: null;
 
-		/*
-		 * Se existir imagem, usamos o modelo de visão.
-		 * Caso contrário, usamos o modelo normal de texto.
-		 */
-		if (image && typeof image === "string") {
+		const systemPrompt =
+			getSystemPrompt(
+				mode,
+			);
+
+		// ====================================================
+		// HISTÓRICO
+		// ====================================================
+
+		const recentMessages =
+			messages
+				.filter(
+					(message) =>
+						message.role !==
+						"system",
+				)
+				.slice(-20);
+
+		const finalMessages: ChatMessage[] =
+			[
+				{
+					role: "system",
+					content:
+						systemPrompt,
+				},
+
+				...recentMessages,
+			];
+
+		// ====================================================
+		// IMAGEM
+		// ====================================================
+
+		if (image) {
 			const inputs = {
-				messages: finalMessages,
+				messages:
+					finalMessages,
+
 				image,
+
 				max_tokens: 1024,
+
 				stream: true,
 			};
 
-			const stream = await env.AI.run(
-				VISION_MODEL,
-				inputs,
-			);
+			const stream =
+				await env.AI.run(
+					VISION_MODEL,
+					inputs,
+				);
 
-			return new Response(stream, {
-				headers: {
-					"Content-Type":
-						"text/event-stream; charset=utf-8",
-					"Cache-Control": "no-cache",
-					Connection: "keep-alive",
+			return new Response(
+				stream,
+				{
+					headers: {
+						"Content-Type":
+							"text/event-stream; charset=utf-8",
+
+						"Cache-Control":
+							"no-cache",
+
+						Connection:
+							"keep-alive",
+					},
 				},
-			});
+			);
 		}
 
+		// ====================================================
+		// TEXTO NORMAL
+		// ====================================================
+
 		const inputs = {
-			messages: finalMessages,
+			messages:
+				finalMessages,
+
 			max_tokens: 1024,
+
 			stream: true,
 		};
 
-		const stream = await env.AI.run(
-			TEXT_MODEL,
-			inputs,
+		const stream =
+			await env.AI.run(
+				TEXT_MODEL,
+				inputs,
+			);
+
+		return new Response(
+			stream,
+			{
+				headers: {
+					"Content-Type":
+						"text/event-stream; charset=utf-8",
+
+					"Cache-Control":
+						"no-cache",
+
+					Connection:
+						"keep-alive",
+				},
+			},
+		);
+	} catch (error) {
+		console.error(
+			"Nexora AI error:",
+			error,
 		);
 
-		return new Response(stream, {
-			headers: {
-				"Content-Type":
-					"text/event-stream; charset=utf-8",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-			},
-		});
-	} catch (error) {
-		console.error("Nexora AI error:", error);
+		const message =
+			error instanceof Error
+				? error.message
+				: "Não foi possível processar sua mensagem.";
 
 		return new Response(
 			JSON.stringify({
-				error:
-					error instanceof Error
-						? error.message
-						: "Não foi possível processar sua mensagem.",
+				error: message,
 			}),
 			{
 				status: 500,
+
 				headers: {
-					"Content-Type": "application/json",
+					"Content-Type":
+						"application/json",
 				},
 			},
 		);
