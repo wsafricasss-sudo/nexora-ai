@@ -38,7 +38,7 @@ self.addEventListener("fetch", (event) => {
 		return;
 	}
 
-	// A API do chat deve continuar indo para a internet.
+	// A API da Nexora continua usando a internet.
 	if (new URL(request.url).pathname.startsWith("/api/")) {
 		return;
 	}
@@ -51,10 +51,10 @@ self.addEventListener("fetch", (event) => {
 					response.status === 200 &&
 					response.type === "basic"
 				) {
-					const responseClone = response.clone();
+					const copy = response.clone();
 
 					caches.open(CACHE_NAME).then((cache) => {
-						cache.put(request, responseClone);
+						cache.put(request, copy);
 					});
 				}
 
