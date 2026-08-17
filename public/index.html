@@ -2,12 +2,17 @@
 <html lang="pt">
 <head>
 	<meta charset="UTF-8" />
+
 	<meta
 		name="viewport"
 		content="width=device-width, initial-scale=1.0"
 	/>
 
 	<title>Nexora AI</title>
+
+	<!-- PWA -->
+	<link rel="manifest" href="/manifest.json" />
+	<meta name="theme-color" content="#08111f" />
 
 	<style>
 		:root {
@@ -332,28 +337,26 @@
 
 		</header>
 
-
 		<!-- MODOS DA NEXORA -->
 
 		<div class="modes">
 
-			<button class="mode">
+			<button class="mode" type="button">
 				<span class="mode-icon">📚</span>
 				<span class="mode-title">ESTUDAR</span>
 			</button>
 
-			<button class="mode">
+			<button class="mode" type="button">
 				<span class="mode-icon">💼</span>
 				<span class="mode-title">NEGÓCIOS</span>
 			</button>
 
-			<button class="mode">
+			<button class="mode" type="button">
 				<span class="mode-icon">🔎</span>
 				<span class="mode-title">PESQUISA</span>
 			</button>
 
 		</div>
-
 
 		<!-- CHAT -->
 
@@ -377,14 +380,12 @@
 
 			</div>
 
-
 			<div
 				class="typing-indicator"
 				id="typing-indicator"
 			>
 				🤖 Nexora está a analisar...
 			</div>
-
 
 			<div class="message-input">
 
@@ -395,7 +396,10 @@
 					autofocus
 				></textarea>
 
-				<button id="send-button">
+				<button
+					id="send-button"
+					type="button"
+				>
 					Enviar
 				</button>
 
@@ -403,17 +407,31 @@
 
 		</div>
 
-
 		<footer>
 			Nexora AI • Powered by Cloudflare Workers AI
 		</footer>
 
 	</div>
 
-
 	<script src="chat.js"></script>
+
+	<!-- Registo do Service Worker -->
+	<script>
+		if ("serviceWorker" in navigator) {
+			window.addEventListener("load", () => {
+				navigator.serviceWorker.register("/sw.js")
+					.then(() => {
+						console.log("Nexora Service Worker ativo.");
+					})
+					.catch((error) => {
+						console.error(
+							"Erro ao registrar Service Worker:",
+							error
+						);
+					});
+			});
+		}
+	</script>
 
 </body>
 </html>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#08111f">
