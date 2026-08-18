@@ -1,4 +1,4 @@
-const CACHE_NAME = "nexora-ai-v1";
+const CACHE_NAME = "nexora-ai-v2";
 
 const APP_FILES = [
 	"/",
@@ -7,6 +7,10 @@ const APP_FILES = [
 	"/manifest.json"
 ];
 
+/* ============================================================
+   INSTALAÇÃO
+============================================================ */
+
 self.addEventListener("install", (event) => {
 	event.waitUntil(
 		caches.open(CACHE_NAME).then((cache) => {
@@ -14,8 +18,14 @@ self.addEventListener("install", (event) => {
 		})
 	);
 
+	// Ativa imediatamente a nova versão
 	self.skipWaiting();
 });
+
+
+/* ============================================================
+   ATIVAÇÃO
+============================================================ */
 
 self.addEventListener("activate", (event) => {
 	event.waitUntil(
@@ -28,24 +38,79 @@ self.addEventListener("activate", (event) => {
 		})
 	);
 
+	// Assume o controle imediatamente
 	self.clients.claim();
 });
+
+
+/* ============================================================
+   FETCH
+============================================================ */
 
 self.addEventListener("fetch", (event) => {
 	const request = event.request;
 
+	// Só tratar GET
 	if (request.method !== "GET") {
 		return;
 	}
 
-	// A API da Nexora continua usando a internet.
-	if (new URL(request.url).pathname.startsWith("/api/")) {
+	const url = new URL(request.url);
+
+	// A API continua sempre pela internet
+	if (url.pathname.startsWith("/api/")) {
 		return;
 	}
+
+
+	/* ========================================================
+	   HTML E JAVASCRIPT
+	   
+	   Sempre tenta buscar a versão nova primeiro.
+	   Isso evita ficar preso numa versão antiga.
+	======================================================== */
+
+	if (
+		request.destination === "document" ||
+		request.destination === "script"
+	) {
+		event.respondWith(
+			fetch(request)
+				.then((response) => {
+
+					if (
+						response &&
+						response.status === 200
+					) {
+						const copy = response.clone();
+
+						caches.open(CACHE_NAME).then((cache) => {
+							cache.put(request, copy);
+						});
+					}
+
+					return response;
+				})
+				.catch(() => {
+					return caches.match(request);
+				})
+		);
+
+		return;
+	}
+
+
+	/* ========================================================
+	   OUTROS ARQUIVOS
+	   
+	   Primeiro tenta a internet.
+	   Se não houver internet, usa o cache.
+	======================================================== */
 
 	event.respondWith(
 		fetch(request)
 			.then((response) => {
+
 				if (
 					response &&
 					response.status === 200 &&
