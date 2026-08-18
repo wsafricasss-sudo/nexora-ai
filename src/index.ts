@@ -2,14 +2,32 @@ import { Env, ChatMessage } from "./types";
 
 const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
+type TavilyResult = {
+	title?: string;
+	url?: string;
+	content?: string;
+	score?: number;
+};
+
+type TavilyResponse = {
+	query?: string;
+	results?: TavilyResult[];
+	answer?: string;
+};
+
+type NexoraEnv = Env & {
+	TAVILY_API_KEY?: string;
+};
+
 /**
  * ============================================================
- * IDENTIDADE DA NEXORA AI
+ * IDENTIDADE E REGRAS GERAIS
  * ============================================================
  */
 
 const BASE_SYSTEM_PROMPT = `
-Você é o Nexora AI, um assistente virtual inteligente, amigável e útil.
+Você é o Nexora AI, um assistente virtual inteligente,
+amigável, moderno e útil.
 
 IDENTIDADE:
 
@@ -54,19 +72,23 @@ essa informação.
 
 REGRAS GERAIS:
 
-- Responda em português quando o usuário falar português.
+- Responda no idioma usado pelo usuário.
+- Se o usuário escrever em português, responda em português.
+- Se escrever em inglês, responda em inglês.
+- Se escrever em outro idioma, adapte-se ao idioma quando possível.
 - Seja claro, natural e objetivo.
 - Não invente informações.
 - Quando não tiver certeza, diga claramente.
-- Diferencie fatos de opiniões.
+- Não apresente hipóteses como fatos.
 - Adapte a explicação ao nível do usuário.
 - Use exemplos quando ajudarem.
+- Organize respostas longas com títulos e tópicos.
 - Seja amigável, profissional e útil.
 `;
 
 /**
  * ============================================================
- * ESTUDAR
+ * MODO ESTUDAR
  * ============================================================
  */
 
@@ -75,11 +97,12 @@ ${BASE_SYSTEM_PROMPT}
 
 Você está no modo ESTUDAR do Nexora AI.
 
-Seu principal objetivo é ensinar.
+Seu objetivo principal é ajudar o usuário a aprender.
 
 Ajude especialmente com:
 - Matemática
 - Português
+- Literatura
 - História
 - Geografia
 - Física
@@ -92,19 +115,30 @@ Ajude especialmente com:
 - Trabalhos escolares
 - Provas e exames
 - Resumos
-- Exercícios
 - Revisões
+- Exercícios
+- Explicações
 - Técnicas de estudo
+- Organização dos estudos
 
-Explique de maneira simples.
-Use exemplos.
-Em exercícios, explique o raciocínio.
-Ajude o usuário a aprender e não apenas a receber a resposta.
+COMPORTAMENTO:
+
+- Aja como um professor particular.
+- Explique assuntos difíceis de forma simples.
+- Use exemplos práticos.
+- Em exercícios, explique o raciocínio passo a passo.
+- Ajude o usuário a compreender, não apenas a copiar.
+- Se o usuário não entender, explique de outra maneira.
+- Pode criar exercícios.
+- Pode corrigir respostas.
+- Pode criar resumos e planos de estudo.
+
+Seu objetivo principal neste modo é ENSINAR.
 `;
 
 /**
  * ============================================================
- * NEGÓCIOS
+ * MODO NEGÓCIOS
  * ============================================================
  */
 
@@ -113,13 +147,15 @@ ${BASE_SYSTEM_PROMPT}
 
 Você está no modo NEGÓCIOS do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a criar,
+Seu objetivo principal é ajudar o usuário a criar,
 analisar e desenvolver negócios.
 
 Ajude especialmente com:
 - Empreendedorismo
+- Ideias de negócios
 - Startups
 - Marketing
+- Marketing digital
 - Vendas
 - Clientes
 - Público-alvo
@@ -131,22 +167,34 @@ Ajude especialmente com:
 - Modelos de negócio
 - Precificação
 - Planejamento
+- Finanças empresariais
 - Custos
 - Receitas
 - Lucro
 - Crescimento
+- Negócios online
 - E-commerce
+- Tecnologia
 - Inteligência artificial para empresas
 
-Se faltarem dados importantes, explique quais dados são
-necessários.
+COMPORTAMENTO:
 
-Não invente estatísticas ou informações financeiras.
+- Aja como um consultor de negócios.
+- Seja prático e estratégico.
+- Transforme ideias em planos concretos.
+- Mostre vantagens, desvantagens e riscos.
+- Ajude a identificar clientes.
+- Ajude a criar estratégias de marketing e vendas.
+- Pode criar ideias de produtos, serviços, nomes e propostas.
+- Não invente estatísticas ou valores de mercado.
+- Quando faltarem dados, diga quais informações são necessárias.
+
+Seu objetivo principal neste modo é AJUDAR A CRIAR E DESENVOLVER NEGÓCIOS.
 `;
 
 /**
  * ============================================================
- * PESQUISA
+ * MODO PESQUISA
  * ============================================================
  */
 
@@ -155,25 +203,45 @@ ${BASE_SYSTEM_PROMPT}
 
 Você está no modo PESQUISA do Nexora AI.
 
-Seu objetivo é pesquisar e analisar informações.
+Este modo possui acesso à pesquisa Web em tempo real.
 
 Quando receber informações provenientes da Web:
 
 - Analise as informações antes de responder.
-- Não copie simplesmente os resultados.
-- Compare informações quando necessário.
-- Diferencie fatos de opiniões.
+- Diferencie fatos de interpretações.
+- Não trate uma única fonte como verdade absoluta quando
+  houver possibilidade de comparação.
 - Não invente fontes.
-- Não invente números.
-- Não apresente informação duvidosa como fato.
-- Quando houver conflito entre fontes, explique.
-- Dê prioridade a fontes confiáveis.
-- Para assuntos atuais, prefira informações recentes.
+- Não invente dados.
+- Não diga que uma informação é atual sem uma pesquisa Web.
+- Quando as fontes apresentarem informações diferentes,
+  explique a diferença.
+- Dê prioridade a fontes relevantes e confiáveis.
+- Para notícias, acontecimentos atuais e informações recentes,
+  dê preferência a informações publicadas recentemente.
+- Quando apropriado, informe as fontes utilizadas.
+- Nunca diga que pesquisou na Web se a pesquisa não aconteceu.
 
-Quando a resposta depender de informações atuais,
-considere a pesquisa na Web como fonte de atualização.
+Você pode pesquisar sobre:
+- Notícias
+- Ciência
+- Tecnologia
+- Inteligência artificial
+- História
+- Geografia
+- Economia
+- Empresas
+- Pessoas públicas
+- Esportes
+- Atualidades
+- Programação
+- Computação
+- Produtos
+- Comparações
+- Informações recentes
+- Outros assuntos que precisem de informação atualizada.
 
-Se não houver resultados suficientes, diga claramente.
+Seu objetivo principal neste modo é PESQUISAR, ANALISAR E EXPLICAR.
 `;
 
 /**
@@ -200,82 +268,159 @@ function getSystemPrompt(mode?: string): string {
 
 /**
  * ============================================================
- * PESQUISA WEB COM AI GATEWAY
+ * PESQUISA WEB — TAVILY
  * ============================================================
  */
 
-async function webSearch(
-	env: Env,
-	messages: ChatMessage[],
-): Promise<Response> {
+async function searchWeb(
+	query: string,
+	env: NexoraEnv,
+): Promise<TavilyResponse | null> {
+	const apiKey = env.TAVILY_API_KEY;
 
-	const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-	const token = env.CLOUDFLARE_API_TOKEN;
-
-	if (!accountId || !token) {
-		throw new Error(
-			"CLOUDFLARE_ACCOUNT_ID ou CLOUDFLARE_API_TOKEN não configurado."
-		);
-	}
-
-	const url =
-		`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/responses`;
-
-	const recentMessages = messages
-		.filter((message) => message.role !== "system")
-		.slice(-20);
-
-	const response = await fetch(url, {
-		method: "POST",
-
-		headers: {
-			"Authorization": `Bearer ${token}`,
-			"Content-Type": "application/json",
-
-			// Se estiver usando o gateway "default",
-			// mantenha este valor.
-			"cf-aig-gateway-id": "default",
-		},
-
-		body: JSON.stringify({
-			model: "openai/gpt-4.1",
-
-			input: [
-				{
-					role: "system",
-					content: RESEARCH_SYSTEM_PROMPT,
-				},
-
-				...recentMessages.map((message) => ({
-					role: message.role,
-					content: message.content,
-				})),
-			],
-
-			tools: [
-				{
-					type: "web_search_preview",
-				},
-			],
-
-			stream: true,
-		}),
-	});
-
-	if (!response.ok) {
-		const errorText = await response.text();
-
+	if (!apiKey) {
 		console.error(
-			"Web search error:",
-			errorText,
+			"Nexora: TAVILY_API_KEY não configurada.",
 		);
 
-		throw new Error(
-			`Erro na pesquisa Web: ${response.status}`
-		);
+		return null;
 	}
 
-	return response;
+	try {
+		const response = await fetch(
+			"https://api.tavily.com/search",
+			{
+				method: "POST",
+
+				headers: {
+					"Content-Type":
+						"application/json",
+
+					Authorization:
+						`Bearer ${apiKey}`,
+				},
+
+				body: JSON.stringify({
+					query,
+
+					search_depth: "basic",
+
+					topic: "general",
+
+					max_results: 5,
+
+					include_answer: true,
+
+					include_raw_content: false,
+
+					include_images: false,
+				}),
+			},
+		);
+
+		if (!response.ok) {
+			const errorText =
+				await response.text();
+
+			console.error(
+				"Tavily HTTP error:",
+				response.status,
+				errorText,
+			);
+
+			return null;
+		}
+
+		const data =
+			(await response.json()) as TavilyResponse;
+
+		return data;
+	} catch (error) {
+		console.error(
+			"Nexora: erro na pesquisa Web:",
+			error,
+		);
+
+		return null;
+	}
+}
+
+/**
+ * ============================================================
+ * CONSTRUIR CONTEXTO DA WEB
+ * ============================================================
+ */
+
+function buildWebContext(
+	search: TavilyResponse,
+): string {
+	const results =
+		Array.isArray(search.results)
+			? search.results
+			: [];
+
+	if (results.length === 0) {
+		return "";
+	}
+
+	const sources = results
+		.map((result, index) => {
+			const title =
+				result.title ||
+				"Fonte sem título";
+
+			const url =
+				result.url ||
+				"URL não disponível";
+
+			const content =
+				result.content ||
+				"Conteúdo não disponível";
+
+			return `
+FONTE ${index + 1}
+Título: ${title}
+URL: ${url}
+Conteúdo:
+${content}
+`;
+		})
+		.join("\n");
+
+	const answer =
+		typeof search.answer === "string"
+			? search.answer
+			: "";
+
+	return `
+============================================================
+RESULTADOS DA PESQUISA WEB
+============================================================
+
+Resposta resumida fornecida pela pesquisa:
+${answer}
+
+Fontes encontradas:
+${sources}
+
+============================================================
+INSTRUÇÕES PARA USAR A WEB
+============================================================
+
+Use os resultados acima como informação externa recente.
+
+Não invente informações que não estejam nos resultados
+ou no seu conhecimento confiável.
+
+Se houver conflito entre fontes, informe o usuário.
+
+Quando usar uma informação encontrada na Web, mencione
+as fontes relevantes na resposta.
+
+Não diga que uma fonte afirma algo que ela não apresenta.
+
+============================================================
+`;
 }
 
 /**
@@ -290,12 +435,17 @@ export default {
 		env: Env,
 		ctx: ExecutionContext,
 	): Promise<Response> {
+		const url =
+			new URL(request.url);
 
-		const url = new URL(request.url);
-
-		if (url.pathname === "/api/chat") {
-
-			if (request.method !== "POST") {
+		if (
+			url.pathname ===
+			"/api/chat"
+		) {
+			if (
+				request.method !==
+				"POST"
+			) {
 				return new Response(
 					"Method not allowed",
 					{
@@ -306,11 +456,13 @@ export default {
 
 			return handleChatRequest(
 				request,
-				env,
+				env as NexoraEnv,
 			);
 		}
 
-		return env.ASSETS.fetch(request);
+		return env.ASSETS.fetch(
+			request,
+		);
 	},
 } satisfies ExportedHandler<Env>;
 
@@ -322,63 +474,25 @@ export default {
 
 async function handleChatRequest(
 	request: Request,
-	env: Env,
+	env: NexoraEnv,
 ): Promise<Response> {
-
 	try {
+		const body =
+			(await request.json()) as {
+				messages?: ChatMessage[];
+				mode?: string;
+			};
 
-		const body = (await request.json()) as {
-			messages?: ChatMessage[];
-			mode?: string;
-		};
-
-		const messages: ChatMessage[] =
-			Array.isArray(body.messages)
+		const messages:
+			ChatMessage[] =
+			Array.isArray(
+				body.messages,
+			)
 				? body.messages
 				: [];
 
-		const mode = body.mode;
-
-		/**
-		 * ======================================================
-		 * MODO PESQUISA
-		 *
-		 * Aqui a Nexora realmente consulta a Web.
-		 * ======================================================
-		 */
-
-		if (mode === "research") {
-
-			const webResponse =
-				await webSearch(
-					env,
-					messages,
-				);
-
-			return new Response(
-				webResponse.body,
-				{
-					status: webResponse.status,
-
-					headers: {
-						"Content-Type":
-							"text/event-stream; charset=utf-8",
-
-						"Cache-Control":
-							"no-cache",
-
-						Connection:
-							"keep-alive",
-					},
-				},
-			);
-		}
-
-		/**
-		 * ======================================================
-		 * ESTUDAR / NEGÓCIOS / NORMAL
-		 * ======================================================
-		 */
+		const mode =
+			body.mode;
 
 		const systemPrompt =
 			getSystemPrompt(mode);
@@ -387,31 +501,93 @@ async function handleChatRequest(
 			messages
 				.filter(
 					(message) =>
-						message.role !== "system",
+						message.role !==
+						"system",
 				)
 				.slice(-20);
 
-		const finalMessages: ChatMessage[] = [
-			{
-				role: "system",
-				content: systemPrompt,
-			},
+		/**
+		 * ========================================================
+		 * PESQUISA WEB
+		 * ========================================================
+		 *
+		 * Só pesquisa automaticamente quando o usuário está
+		 * no modo PESQUISA.
+		 */
 
-			...recentMessages,
-		];
+		let webContext = "";
+
+		if (
+			mode === "research" &&
+			recentMessages.length > 0
+		) {
+			const lastUserMessage =
+				[...recentMessages]
+					.reverse()
+					.find(
+						(message) =>
+							message.role ===
+							"user",
+					);
+
+			if (
+				lastUserMessage &&
+				typeof lastUserMessage.content ===
+					"string"
+			) {
+				const searchQuery =
+					lastUserMessage.content.trim();
+
+				if (searchQuery) {
+					const search =
+						await searchWeb(
+							searchQuery,
+							env,
+						);
+
+					if (search) {
+						webContext =
+							buildWebContext(
+								search,
+							);
+					}
+				}
+			}
+		}
+
+		const finalSystemPrompt =
+			systemPrompt +
+			(webContext
+				? `\n\n${webContext}`
+				: "");
+
+		const finalMessages:
+			ChatMessage[] = [
+				{
+					role: "system",
+					content:
+						finalSystemPrompt,
+				},
+				...recentMessages,
+			];
 
 		const inputs = {
-			messages: finalMessages,
+			messages:
+				finalMessages,
 
-			max_tokens: 1024,
+			max_tokens:
+				1024,
 
-			stream: true,
+			stream:
+				true,
 		} satisfies AiTextGenerationInput & {
 			stream: true;
 		};
 
 		const stream =
-			await env.AI.run<typeof MODEL_ID>(
+			await env.AI.run<
+				typeof MODEL_ID
+			>(
 				MODEL_ID,
 				inputs,
 			);
@@ -431,9 +607,7 @@ async function handleChatRequest(
 				},
 			},
 		);
-
 	} catch (error) {
-
 		console.error(
 			"Nexora AI error:",
 			error,
