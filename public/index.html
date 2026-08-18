@@ -75,6 +75,300 @@
 		}
 
 		/* =====================================================
+		   ENTRADA NEXORA
+		===================================================== */
+
+		.nexora-intro {
+			position: fixed;
+			inset: 0;
+
+			z-index: 999999;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			background:
+				radial-gradient(
+					circle at center,
+					#102541 0%,
+					#08111f 55%,
+					#050b14 100%
+				);
+
+			opacity: 1;
+
+			transition:
+				opacity 0.45s ease,
+				visibility 0.45s ease;
+		}
+
+		.nexora-intro.hide {
+			opacity: 0;
+			visibility: hidden;
+			pointer-events: none;
+		}
+
+		.nexora-intro-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+
+			animation:
+				nexoraIntroEnter
+				0.7s
+				cubic-bezier(.22,1,.36,1)
+				both;
+		}
+
+		.nexora-intro-logo {
+			position: relative;
+
+			width: 104px;
+			height: 104px;
+
+			display: flex;
+			align-items: center;
+			justify-content: center;
+
+			border-radius: 30px;
+
+			background:
+				linear-gradient(
+					135deg,
+					#38bdf8 0%,
+					#6366f1 100%
+				);
+
+			box-shadow:
+				0 0 0 1px rgba(255,255,255,0.08),
+				0 0 35px rgba(56,189,248,0.35),
+				0 20px 60px rgba(0,0,0,0.45);
+
+			animation:
+				nexoraLogoFloat
+				1.8s
+				ease-in-out
+				infinite;
+		}
+
+		.nexora-intro-logo::before {
+			content: "";
+
+			position: absolute;
+			inset: -12px;
+
+			border-radius: 36px;
+
+			border: 1px solid
+				rgba(56,189,248,0.35);
+
+			animation:
+				nexoraPulse
+				1.8s
+				ease-out
+				infinite;
+		}
+
+		.nexora-intro-logo::after {
+			content: "";
+
+			position: absolute;
+			inset: -35px;
+
+			border-radius: 50%;
+
+			background:
+				radial-gradient(
+					circle,
+					rgba(56,189,248,0.18),
+					transparent 65%
+				);
+
+			pointer-events: none;
+		}
+
+		.nexora-logo-n {
+			position: relative;
+			z-index: 2;
+
+			color: white;
+
+			font-size: 52px;
+			font-weight: 900;
+
+			line-height: 1;
+
+			letter-spacing: -4px;
+
+			text-shadow:
+				0 4px 20px
+				rgba(0,0,0,0.25);
+		}
+
+		.nexora-logo-star {
+			position: absolute;
+
+			top: 13px;
+			right: 12px;
+
+			z-index: 3;
+
+			color: white;
+
+			font-size: 25px;
+
+			line-height: 1;
+
+			transform:
+				rotate(12deg);
+
+			filter:
+				drop-shadow(
+					0 0 8px
+					rgba(255,255,255,0.8)
+				);
+
+			animation:
+				nexoraStar
+				1.4s
+				ease-in-out
+				infinite;
+		}
+
+		.nexora-intro-name {
+			margin-top: 28px;
+
+			color: white;
+
+			font-size: 30px;
+			font-weight: 800;
+
+			letter-spacing: 4px;
+
+			text-shadow:
+				0 0 25px
+				rgba(56,189,248,0.3);
+		}
+
+		.nexora-intro-status {
+			margin-top: 10px;
+
+			color: #94a3b8;
+
+			font-size: 13px;
+
+			letter-spacing: 0.4px;
+
+			animation:
+				nexoraStatus
+				1.2s
+				ease-in-out
+				infinite;
+		}
+
+		.nexora-dots::after {
+			content: "";
+
+			animation:
+				nexoraDots
+				1.2s
+				steps(4,end)
+				infinite;
+		}
+
+		@keyframes nexoraIntroEnter {
+			from {
+				opacity: 0;
+				transform:
+					scale(0.78)
+					translateY(14px);
+			}
+
+			to {
+				opacity: 1;
+				transform:
+					scale(1)
+					translateY(0);
+			}
+		}
+
+		@keyframes nexoraLogoFloat {
+			0%,
+			100% {
+				transform:
+					translateY(0)
+					scale(1);
+			}
+
+			50% {
+				transform:
+					translateY(-5px)
+					scale(1.015);
+			}
+		}
+
+		@keyframes nexoraPulse {
+			0% {
+				opacity: 0.8;
+				transform: scale(0.9);
+			}
+
+			100% {
+				opacity: 0;
+				transform: scale(1.18);
+			}
+		}
+
+		@keyframes nexoraStar {
+			0%,
+			100% {
+				transform:
+					rotate(12deg)
+					scale(1);
+				opacity: 0.85;
+			}
+
+			50% {
+				transform:
+					rotate(25deg)
+					scale(1.18);
+				opacity: 1;
+			}
+		}
+
+		@keyframes nexoraStatus {
+			0%,
+			100% {
+				opacity: 0.55;
+			}
+
+			50% {
+				opacity: 1;
+			}
+		}
+
+		@keyframes nexoraDots {
+			0% {
+				content: "";
+			}
+
+			25% {
+				content: ".";
+			}
+
+			50% {
+				content: "..";
+			}
+
+			75%,
+			100% {
+				content: "...";
+			}
+		}
+
+		/* =====================================================
 		   APP — ECRÃ COMPLETO
 		===================================================== */
 
@@ -450,6 +744,29 @@
 
 		@media (max-width: 600px) {
 
+			.nexora-intro-logo {
+				width: 88px;
+				height: 88px;
+
+				border-radius: 26px;
+			}
+
+			.nexora-logo-n {
+				font-size: 44px;
+			}
+
+			.nexora-logo-star {
+				top: 10px;
+				right: 10px;
+				font-size: 21px;
+			}
+
+			.nexora-intro-name {
+				font-size: 25px;
+				letter-spacing: 3px;
+				margin-top: 24px;
+			}
+
 			header {
 				padding:
 					12px
@@ -549,6 +866,43 @@
 
 <body>
 
+	<!-- =====================================================
+	     ENTRADA ANIMADA DA NEXORA
+	===================================================== -->
+
+	<div
+		id="nexora-intro"
+		class="nexora-intro"
+		aria-label="Nexora AI"
+	>
+
+		<div class="nexora-intro-content">
+
+			<div class="nexora-intro-logo">
+
+				<span class="nexora-logo-n">
+					N
+				</span>
+
+				<span class="nexora-logo-star">
+					✦
+				</span>
+
+			</div>
+
+			<div class="nexora-intro-name">
+				NEXORA AI
+			</div>
+
+			<div class="nexora-intro-status">
+				A iniciar<span class="nexora-dots"></span>
+			</div>
+
+		</div>
+
+	</div>
+
+
 	<div class="app">
 
 		<!-- =================================================
@@ -565,123 +919,4 @@
 
 				<h1>
 					NEXORA AI
-				</h1>
-
-			</div>
-
-		</header>
-
-
-		<!-- =================================================
-		     MODOS
-		================================================== -->
-
-		<div class="modes">
-
-			<button
-				type="button"
-				class="mode"
-			>
-				<span class="mode-icon">
-					📚
-				</span>
-
-				<span class="mode-title">
-					ESTUDAR
-				</span>
-			</button>
-
-
-			<button
-				type="button"
-				class="mode"
-			>
-				<span class="mode-icon">
-					💼
-				</span>
-
-				<span class="mode-title">
-					NEGÓCIOS
-				</span>
-			</button>
-
-
-			<button
-				type="button"
-				class="mode"
-			>
-				<span class="mode-icon">
-					🔎
-				</span>
-
-				<span class="mode-title">
-					PESQUISA
-				</span>
-			</button>
-
-		</div>
-
-
-		<!-- =================================================
-		     CHAT
-		================================================== -->
-
-		<div class="chat-container">
-
-			<div
-				id="chat-messages"
-				class="chat-messages"
-			></div>
-
-
-			<div
-				class="typing-indicator"
-				id="typing-indicator"
-			>
-				🤖 Nexora está a analisar...
-			</div>
-
-
-			<!-- =================================================
-			     INPUT
-			================================================== -->
-
-			<div class="message-input">
-
-				<div class="input-inner">
-
-					<textarea
-						id="user-input"
-						placeholder="Escreva sua pergunta..."
-						rows="1"
-						autofocus
-					></textarea>
-
-
-					<button
-						id="send-button"
-						type="button"
-						aria-label="Enviar mensagem"
-						title="Enviar"
-					>
-						↑
-					</button>
-
-				</div>
-
-			</div>
-
-		</div>
-
-
-		<footer>
-			Nexora AI
-		</footer>
-
-	</div>
-
-
-	<script src="chat.js"></script>
-
-</body>
-</html>
+				</h
