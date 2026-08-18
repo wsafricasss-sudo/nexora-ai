@@ -97,10 +97,11 @@
 				);
 
 			opacity: 1;
+			visibility: visible;
 
 			transition:
-				opacity 0.45s ease,
-				visibility 0.45s ease;
+				opacity 0.35s ease,
+				visibility 0.35s ease;
 		}
 
 		.nexora-intro.hide {
@@ -117,7 +118,7 @@
 
 			animation:
 				nexoraIntroEnter
-				0.7s
+				0.55s
 				cubic-bezier(.22,1,.36,1)
 				both;
 		}
@@ -148,7 +149,7 @@
 
 			animation:
 				nexoraLogoFloat
-				1.8s
+				1.25s
 				ease-in-out
 				infinite;
 		}
@@ -157,16 +158,16 @@
 			content: "";
 
 			position: absolute;
-			inset: -12px;
+			inset: -10px;
 
 			border-radius: 36px;
 
 			border: 1px solid
-				rgba(56,189,248,0.35);
+				rgba(56,189,248,0.4);
 
 			animation:
 				nexoraPulse
-				1.8s
+				1.25s
 				ease-out
 				infinite;
 		}
@@ -175,7 +176,7 @@
 			content: "";
 
 			position: absolute;
-			inset: -35px;
+			inset: -30px;
 
 			border-radius: 50%;
 
@@ -221,8 +222,7 @@
 
 			line-height: 1;
 
-			transform:
-				rotate(12deg);
+			transform: rotate(12deg);
 
 			filter:
 				drop-shadow(
@@ -232,7 +232,7 @@
 
 			animation:
 				nexoraStar
-				1.4s
+				0.9s
 				ease-in-out
 				infinite;
 		}
@@ -263,7 +263,7 @@
 
 			animation:
 				nexoraStatus
-				1.2s
+				0.9s
 				ease-in-out
 				infinite;
 		}
@@ -273,7 +273,7 @@
 
 			animation:
 				nexoraDots
-				1.2s
+				0.9s
 				steps(4,end)
 				infinite;
 		}
@@ -282,8 +282,8 @@
 			from {
 				opacity: 0;
 				transform:
-					scale(0.78)
-					translateY(14px);
+					scale(0.82)
+					translateY(10px);
 			}
 
 			to {
@@ -304,7 +304,7 @@
 
 			50% {
 				transform:
-					translateY(-5px)
+					translateY(-4px)
 					scale(1.015);
 			}
 		}
@@ -333,7 +333,7 @@
 			50% {
 				transform:
 					rotate(25deg)
-					scale(1.18);
+					scale(1.16);
 				opacity: 1;
 			}
 		}
@@ -369,7 +369,7 @@
 		}
 
 		/* =====================================================
-		   APP — ECRÃ COMPLETO
+		   APP
 		===================================================== */
 
 		.app {
@@ -408,13 +408,15 @@
 
 			border-radius: 13px;
 
-			background: linear-gradient(
-				135deg,
-				#38bdf8,
-				#6366f1
-			);
+			background:
+				linear-gradient(
+					135deg,
+					#38bdf8,
+					#6366f1
+				);
 
 			color: white;
+
 			font-size: 22px;
 			font-weight: 800;
 
@@ -451,6 +453,7 @@
 			padding: 5px 12px 12px;
 
 			overflow-x: auto;
+
 			scrollbar-width: none;
 		}
 
@@ -485,6 +488,8 @@
 		.mode:hover {
 			border-color: var(--primary);
 			color: var(--text);
+
+			transform: translateY(-1px);
 		}
 
 		.mode-icon {
@@ -532,36 +537,47 @@
 			scroll-behavior: smooth;
 
 			scrollbar-width: thin;
+
 			scrollbar-color:
 				#263a55
 				transparent;
+
+			-webkit-overflow-scrolling: touch;
 		}
 
 		.message {
 			width: fit-content;
-			max-width: min(760px, 90%);
+
+			max-width:
+				min(760px, 90%);
 
 			margin-bottom: 18px;
 
-			padding: 13px 16px;
+			padding:
+				13px
+				16px;
 
 			border-radius: 18px;
 
 			line-height: 1.6;
 
 			animation:
-				messageAppear 0.18s ease;
+				messageAppear
+				0.18s
+				ease;
 		}
 
 		@keyframes messageAppear {
 			from {
 				opacity: 0;
-				transform: translateY(4px);
+				transform:
+					translateY(4px);
 			}
 
 			to {
 				opacity: 1;
-				transform: translateY(0);
+				transform:
+					translateY(0);
 			}
 		}
 
@@ -581,9 +597,12 @@
 		.assistant-message {
 			margin-right: auto;
 
-			background: var(--assistant);
+			background:
+				var(--assistant);
 
-			border: 1px solid transparent;
+			border:
+				1px solid
+				transparent;
 
 			border-bottom-left-radius: 6px;
 		}
@@ -615,7 +634,7 @@
 		}
 
 		/* =====================================================
-		   ÁREA DE INPUT
+		   INPUT
 		===================================================== */
 
 		.message-input {
@@ -626,7 +645,10 @@
 			padding:
 				10px
 				16px
-				calc(12px + env(safe-area-inset-bottom));
+				calc(
+					12px +
+					env(safe-area-inset-bottom)
+				);
 
 			background:
 				linear-gradient(
@@ -644,13 +666,18 @@
 
 			display: flex;
 			align-items: flex-end;
+
 			gap: 8px;
 
 			padding: 8px;
 
-			background: var(--surface-2);
+			background:
+				var(--surface-2);
 
-			border: 1px solid var(--border);
+			border:
+				1px solid
+				var(--border);
+
 			border-radius: 18px;
 
 			box-shadow:
@@ -664,12 +691,16 @@
 			min-height: 44px;
 			max-height: 150px;
 
-			padding: 11px 12px;
+			padding:
+				11px
+				12px;
 
 			border: none;
 			outline: none;
 
-			background: transparent;
+			background:
+				transparent;
+
 			color: var(--text);
 
 			font-size: 16px;
@@ -690,9 +721,12 @@
 			height: 44px;
 
 			border: none;
+
 			border-radius: 13px;
 
-			background: var(--primary);
+			background:
+				var(--primary);
+
 			color: #062033;
 
 			font-size: 18px;
@@ -706,14 +740,18 @@
 		}
 
 		#send-button:hover {
-			background: var(--primary-dark);
+			background:
+				var(--primary-dark);
+
 			color: white;
 
-			transform: scale(1.03);
+			transform:
+				scale(1.03);
 		}
 
 		#send-button:disabled {
 			opacity: 0.45;
+
 			cursor: not-allowed;
 
 			transform: none;
@@ -758,12 +796,15 @@
 			.nexora-logo-star {
 				top: 10px;
 				right: 10px;
+
 				font-size: 21px;
 			}
 
 			.nexora-intro-name {
 				font-size: 25px;
+
 				letter-spacing: 3px;
+
 				margin-top: 24px;
 			}
 
@@ -903,6 +944,10 @@
 	</div>
 
 
+	<!-- =====================================================
+	     APLICAÇÃO
+	===================================================== -->
+
 	<div class="app">
 
 		<!-- =================================================
@@ -919,4 +964,193 @@
 
 				<h1>
 					NEXORA AI
-				</h
+				</h1>
+
+			</div>
+
+		</header>
+
+
+		<!-- =================================================
+		     MODOS
+		================================================== -->
+
+		<div class="modes">
+
+			<button
+				type="button"
+				class="mode"
+			>
+
+				<span class="mode-icon">
+					📚
+				</span>
+
+				<span class="mode-title">
+					ESTUDAR
+				</span>
+
+			</button>
+
+
+			<button
+				type="button"
+				class="mode"
+			>
+
+				<span class="mode-icon">
+					💼
+				</span>
+
+				<span class="mode-title">
+					NEGÓCIOS
+				</span>
+
+			</button>
+
+
+			<button
+				type="button"
+				class="mode"
+			>
+
+				<span class="mode-icon">
+					🔎
+				</span>
+
+				<span class="mode-title">
+					PESQUISA
+				</span>
+
+			</button>
+
+		</div>
+
+
+		<!-- =================================================
+		     CHAT
+		================================================== -->
+
+		<div class="chat-container">
+
+			<div
+				id="chat-messages"
+				class="chat-messages"
+			></div>
+
+
+			<div
+				class="typing-indicator"
+				id="typing-indicator"
+			>
+				🤖 Nexora está a analisar...
+			</div>
+
+
+			<!-- =================================================
+			     INPUT
+			================================================== -->
+
+			<div class="message-input">
+
+				<div class="input-inner">
+
+					<textarea
+						id="user-input"
+						placeholder="Escreva sua pergunta..."
+						rows="1"
+						autofocus
+					></textarea>
+
+
+					<button
+						id="send-button"
+						type="button"
+						aria-label="Enviar mensagem"
+						title="Enviar"
+					>
+						↑
+					</button>
+
+				</div>
+
+			</div>
+
+		</div>
+
+
+		<!-- =================================================
+		     FOOTER
+		================================================== -->
+
+		<footer>
+			Nexora AI
+		</footer>
+
+	</div>
+
+
+	<!-- =====================================================
+	     SCRIPT PRINCIPAL
+	===================================================== -->
+
+	<script src="/chat.js"></script>
+
+
+	<!-- =====================================================
+	     ENTRADA RÁPIDA
+	     Não bloqueia o aplicativo.
+	===================================================== -->
+
+	<script>
+		(function () {
+
+			const intro =
+				document.getElementById(
+					"nexora-intro"
+				);
+
+			if (!intro) {
+				return;
+			}
+
+			/*
+			 * A animação aparece imediatamente.
+			 *
+			 * Depois de aproximadamente 0,9 segundo,
+			 * a tela desaparece suavemente.
+			 *
+			 * O aplicativo já está carregado por baixo,
+			 * portanto não existe uma segunda tela
+			 * para carregar.
+			 */
+
+			const hideIntro = () => {
+
+				intro.classList.add("hide");
+
+				setTimeout(() => {
+
+					if (intro.parentNode) {
+						intro.remove();
+					}
+
+				}, 400);
+
+			};
+
+			/*
+			 * Não esperamos API, chat.js ou internet
+			 * para retirar a animação.
+			 */
+
+			setTimeout(
+				hideIntro,
+				900
+			);
+
+		})();
+	</script>
+
+</body>
+</html>
