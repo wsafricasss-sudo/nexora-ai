@@ -7,9 +7,9 @@ const APP_FILES = [
 	"/manifest.json"
 ];
 
-/* ============================================================
-   INSTALAÇÃO
-============================================================ */
+// ============================================================
+// INSTALAÇÃO
+// ============================================================
 
 self.addEventListener("install", (event) => {
 	event.waitUntil(
@@ -18,14 +18,13 @@ self.addEventListener("install", (event) => {
 		})
 	);
 
-	// Ativa imediatamente a nova versão
+	// Ativa a nova versão imediatamente
 	self.skipWaiting();
 });
 
-
-/* ============================================================
-   ATIVAÇÃO
-============================================================ */
+// ============================================================
+// ATIVAÇÃO
+// ============================================================
 
 self.addEventListener("activate", (event) => {
 	event.waitUntil(
@@ -38,79 +37,32 @@ self.addEventListener("activate", (event) => {
 		})
 	);
 
-	// Assume o controle imediatamente
+	// Faz a nova versão assumir as páginas abertas
 	self.clients.claim();
 });
 
-
-/* ============================================================
-   FETCH
-============================================================ */
+// ============================================================
+// FETCH
+// ============================================================
 
 self.addEventListener("fetch", (event) => {
 	const request = event.request;
 
-	// Só tratar GET
+	// Só tratamos pedidos GET
 	if (request.method !== "GET") {
 		return;
 	}
 
 	const url = new URL(request.url);
 
-	// A API continua sempre pela internet
+	// A API da Nexora continua usando a internet.
 	if (url.pathname.startsWith("/api/")) {
 		return;
 	}
 
-
-	/* ========================================================
-	   HTML E JAVASCRIPT
-	   
-	   Sempre tenta buscar a versão nova primeiro.
-	   Isso evita ficar preso numa versão antiga.
-	======================================================== */
-
-	if (
-		request.destination === "document" ||
-		request.destination === "script"
-	) {
-		event.respondWith(
-			fetch(request)
-				.then((response) => {
-
-					if (
-						response &&
-						response.status === 200
-					) {
-						const copy = response.clone();
-
-						caches.open(CACHE_NAME).then((cache) => {
-							cache.put(request, copy);
-						});
-					}
-
-					return response;
-				})
-				.catch(() => {
-					return caches.match(request);
-				})
-		);
-
-		return;
-	}
-
-
-	/* ========================================================
-	   OUTROS ARQUIVOS
-	   
-	   Primeiro tenta a internet.
-	   Se não houver internet, usa o cache.
-	======================================================== */
-
 	event.respondWith(
 		fetch(request)
 			.then((response) => {
-
 				if (
 					response &&
 					response.status === 200 &&
