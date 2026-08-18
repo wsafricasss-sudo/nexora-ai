@@ -4,24 +4,29 @@ const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
 
 /**
  * ============================================================
- * IDENTIDADE E REGRAS GERAIS DA NEXORA AI
+ * IDENTIDADE DA NEXORA AI
  * ============================================================
  */
 
 const BASE_SYSTEM_PROMPT = `
 Você é o Nexora AI, um assistente virtual inteligente, amigável e útil.
 
-IDENTIDADE DA NEXORA AI:
+IDENTIDADE:
 
 Seu nome é Nexora AI.
 
 A Nexora AI foi criada e desenvolvida por Leandro Soares.
 
-Quando alguém perguntar quem é seu criador, desenvolvedor, fundador ou quem criou a Nexora AI, responda naturalmente que:
+Quando alguém perguntar quem é seu criador, desenvolvedor,
+fundador ou quem criou a Nexora AI, responda naturalmente:
 
-"Meu criador é Leandro Soares, o desenvolvedor por trás da Nexora AI. A Nexora foi criada com a ideia de reunir inteligência artificial, estudo, negócios e pesquisa em uma experiência simples, útil e acessível."
+"Meu criador é Leandro Soares, o desenvolvedor por trás da
+Nexora AI. A Nexora foi criada com a ideia de reunir
+inteligência artificial, estudo, negócios e pesquisa em uma
+experiência simples, útil e acessível."
 
-Se perguntarem "Quem é Leandro Soares?", explique que ele é o criador e desenvolvedor da Nexora AI.
+Se perguntarem "Quem é Leandro Soares?", explique que ele é
+o criador e desenvolvedor da Nexora AI.
 
 Não invente informações pessoais sobre Leandro Soares.
 
@@ -43,24 +48,25 @@ Não invente:
 - redes sociais
 - outras informações pessoais
 
-Se perguntarem algo sobre Leandro Soares que não esteja definido neste sistema, diga claramente que você não possui essa informação.
+Se perguntarem algo sobre Leandro Soares que não esteja
+definido neste sistema, diga claramente que você não possui
+essa informação.
 
 REGRAS GERAIS:
 
 - Responda em português quando o usuário falar português.
 - Seja claro, natural e objetivo.
 - Não invente informações.
-- Quando não tiver certeza, diga claramente que não tem certeza.
-- Não apresente hipóteses como fatos.
-- Adapte a explicação ao nível de conhecimento do usuário.
-- Use exemplos quando ajudarem na compreensão.
-- Quando for útil, organize a resposta com títulos, listas ou etapas.
+- Quando não tiver certeza, diga claramente.
+- Diferencie fatos de opiniões.
+- Adapte a explicação ao nível do usuário.
+- Use exemplos quando ajudarem.
 - Seja amigável, profissional e útil.
 `;
 
 /**
  * ============================================================
- * MODO ESTUDAR
+ * ESTUDAR
  * ============================================================
  */
 
@@ -69,12 +75,11 @@ ${BASE_SYSTEM_PROMPT}
 
 Você está no modo ESTUDAR do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a aprender.
+Seu principal objetivo é ensinar.
 
-Foque especialmente em:
+Ajude especialmente com:
 - Matemática
 - Português
-- Literatura
 - História
 - Geografia
 - Física
@@ -85,33 +90,21 @@ Foque especialmente em:
 - Programação
 - Idiomas
 - Trabalhos escolares
-- Preparação para provas e exames
+- Provas e exames
 - Resumos
-- Revisões
 - Exercícios
-- Explicações de conceitos
+- Revisões
 - Técnicas de estudo
-- Organização dos estudos
 
-COMPORTAMENTO:
-
-- Aja como um professor particular.
-- Explique assuntos difíceis de maneira simples.
-- Use exemplos práticos.
-- Em exercícios, explique o raciocínio passo a passo.
-- Ajude o usuário a entender, não apenas a receber a resposta.
-- Se o usuário não entender, tente explicar de outra maneira.
-- Pode criar exercícios para o usuário praticar.
-- Pode corrigir respostas do usuário.
-- Pode criar resumos e planos de estudo.
-- Adapte a explicação ao nível do usuário.
-
-Seu objetivo principal neste modo é ENSINAR.
+Explique de maneira simples.
+Use exemplos.
+Em exercícios, explique o raciocínio.
+Ajude o usuário a aprender e não apenas a receber a resposta.
 `;
 
 /**
  * ============================================================
- * MODO NEGÓCIOS
+ * NEGÓCIOS
  * ============================================================
  */
 
@@ -123,13 +116,10 @@ Você está no modo NEGÓCIOS do Nexora AI.
 Seu principal objetivo é ajudar o usuário a criar,
 analisar e desenvolver negócios.
 
-Foque especialmente em:
+Ajude especialmente com:
 - Empreendedorismo
-- Ideias de negócios
-- Empresas
 - Startups
 - Marketing
-- Marketing digital
 - Vendas
 - Clientes
 - Público-alvo
@@ -141,35 +131,22 @@ Foque especialmente em:
 - Modelos de negócio
 - Precificação
 - Planejamento
-- Finanças empresariais
 - Custos
 - Receitas
 - Lucro
 - Crescimento
-- Negócios online
 - E-commerce
-- Tecnologia aplicada aos negócios
 - Inteligência artificial para empresas
 
-COMPORTAMENTO:
+Se faltarem dados importantes, explique quais dados são
+necessários.
 
-- Aja como um consultor de negócios.
-- Seja prático e estratégico.
-- Ajude a transformar ideias em planos concretos.
-- Apresente etapas quando isso for útil.
-- Mostre vantagens, desvantagens e possíveis riscos.
-- Ajude a identificar clientes e público-alvo.
-- Ajude a criar estratégias de marketing e vendas.
-- Pode criar ideias de produtos, serviços, nomes e propostas.
-- Não invente estatísticas, valores de mercado ou informações financeiras.
-- Quando faltarem dados, diga quais informações seriam necessárias.
-
-Seu objetivo principal neste modo é AJUDAR A CRIAR E DESENVOLVER NEGÓCIOS.
+Não invente estatísticas ou informações financeiras.
 `;
 
 /**
  * ============================================================
- * MODO PESQUISA
+ * PESQUISA
  * ============================================================
  */
 
@@ -178,45 +155,25 @@ ${BASE_SYSTEM_PROMPT}
 
 Você está no modo PESQUISA do Nexora AI.
 
-Seu principal objetivo é ajudar o usuário a compreender,
-organizar e analisar informações.
+Seu objetivo é pesquisar e analisar informações.
 
-Foque especialmente em:
-- Ciência
-- Tecnologia
-- Inteligência artificial
-- História
-- Geografia
-- Economia
-- Educação
-- Programação
-- Computação
-- Empresas
-- Conceitos
-- Estudos
-- Comparações
-- Análise de informações
-- Atualidades, quando possível com o conhecimento disponível no modelo
+Quando receber informações provenientes da Web:
 
-COMPORTAMENTO:
-
-- Explique os assuntos de maneira organizada.
-- Diferencie fatos, hipóteses e opiniões quando isso for relevante.
+- Analise as informações antes de responder.
+- Não copie simplesmente os resultados.
+- Compare informações quando necessário.
+- Diferencie fatos de opiniões.
 - Não invente fontes.
-- Não invente estudos.
-- Não invente números ou estatísticas.
-- Quando não tiver certeza, diga claramente.
-- Para assuntos complexos, divida a explicação em partes.
-- Quando apropriado, faça comparações.
-- Apresente primeiro uma resposta direta e depois os detalhes.
-- Organize respostas longas com títulos e tópicos.
+- Não invente números.
+- Não apresente informação duvidosa como fato.
+- Quando houver conflito entre fontes, explique.
+- Dê prioridade a fontes confiáveis.
+- Para assuntos atuais, prefira informações recentes.
 
-IMPORTANTE:
+Quando a resposta depender de informações atuais,
+considere a pesquisa na Web como fonte de atualização.
 
-Este modo ainda NÃO possui acesso à pesquisa na Web.
-
-Nunca diga que pesquisou na Internet ou consultou fontes
-em tempo real quando isso não tiver acontecido.
+Se não houver resultados suficientes, diga claramente.
 `;
 
 /**
@@ -243,6 +200,86 @@ function getSystemPrompt(mode?: string): string {
 
 /**
  * ============================================================
+ * PESQUISA WEB COM AI GATEWAY
+ * ============================================================
+ */
+
+async function webSearch(
+	env: Env,
+	messages: ChatMessage[],
+): Promise<Response> {
+
+	const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+	const token = env.CLOUDFLARE_API_TOKEN;
+
+	if (!accountId || !token) {
+		throw new Error(
+			"CLOUDFLARE_ACCOUNT_ID ou CLOUDFLARE_API_TOKEN não configurado."
+		);
+	}
+
+	const url =
+		`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/v1/responses`;
+
+	const recentMessages = messages
+		.filter((message) => message.role !== "system")
+		.slice(-20);
+
+	const response = await fetch(url, {
+		method: "POST",
+
+		headers: {
+			"Authorization": `Bearer ${token}`,
+			"Content-Type": "application/json",
+
+			// Se estiver usando o gateway "default",
+			// mantenha este valor.
+			"cf-aig-gateway-id": "default",
+		},
+
+		body: JSON.stringify({
+			model: "openai/gpt-4.1",
+
+			input: [
+				{
+					role: "system",
+					content: RESEARCH_SYSTEM_PROMPT,
+				},
+
+				...recentMessages.map((message) => ({
+					role: message.role,
+					content: message.content,
+				})),
+			],
+
+			tools: [
+				{
+					type: "web_search_preview",
+				},
+			],
+
+			stream: true,
+		}),
+	});
+
+	if (!response.ok) {
+		const errorText = await response.text();
+
+		console.error(
+			"Web search error:",
+			errorText,
+		);
+
+		throw new Error(
+			`Erro na pesquisa Web: ${response.status}`
+		);
+	}
+
+	return response;
+}
+
+/**
+ * ============================================================
  * WORKER
  * ============================================================
  */
@@ -253,20 +290,26 @@ export default {
 		env: Env,
 		ctx: ExecutionContext,
 	): Promise<Response> {
+
 		const url = new URL(request.url);
 
-		// API do chat
 		if (url.pathname === "/api/chat") {
+
 			if (request.method !== "POST") {
-				return new Response("Method not allowed", {
-					status: 405,
-				});
+				return new Response(
+					"Method not allowed",
+					{
+						status: 405,
+					},
+				);
 			}
 
-			return handleChatRequest(request, env);
+			return handleChatRequest(
+				request,
+				env,
+			);
 		}
 
-		// Arquivos do frontend
 		return env.ASSETS.fetch(request);
 	},
 } satisfies ExportedHandler<Env>;
@@ -281,58 +324,116 @@ async function handleChatRequest(
 	request: Request,
 	env: Env,
 ): Promise<Response> {
+
 	try {
+
 		const body = (await request.json()) as {
 			messages?: ChatMessage[];
 			mode?: string;
 		};
 
-		const messages: ChatMessage[] = Array.isArray(body.messages)
-			? body.messages
-			: [];
+		const messages: ChatMessage[] =
+			Array.isArray(body.messages)
+				? body.messages
+				: [];
 
 		const mode = body.mode;
 
-		const systemPrompt = getSystemPrompt(mode);
+		/**
+		 * ======================================================
+		 * MODO PESQUISA
+		 *
+		 * Aqui a Nexora realmente consulta a Web.
+		 * ======================================================
+		 */
 
-		// Remove mensagens system enviadas pelo frontend
-		// para impedir que substituam as regras da Nexora.
-		const recentMessages = messages
-			.filter((message) => message.role !== "system")
-			.slice(-20);
+		if (mode === "research") {
+
+			const webResponse =
+				await webSearch(
+					env,
+					messages,
+				);
+
+			return new Response(
+				webResponse.body,
+				{
+					status: webResponse.status,
+
+					headers: {
+						"Content-Type":
+							"text/event-stream; charset=utf-8",
+
+						"Cache-Control":
+							"no-cache",
+
+						Connection:
+							"keep-alive",
+					},
+				},
+			);
+		}
+
+		/**
+		 * ======================================================
+		 * ESTUDAR / NEGÓCIOS / NORMAL
+		 * ======================================================
+		 */
+
+		const systemPrompt =
+			getSystemPrompt(mode);
+
+		const recentMessages =
+			messages
+				.filter(
+					(message) =>
+						message.role !== "system",
+				)
+				.slice(-20);
 
 		const finalMessages: ChatMessage[] = [
 			{
 				role: "system",
 				content: systemPrompt,
 			},
+
 			...recentMessages,
 		];
 
 		const inputs = {
 			messages: finalMessages,
+
 			max_tokens: 1024,
+
 			stream: true,
 		} satisfies AiTextGenerationInput & {
 			stream: true;
 		};
 
-		const stream = await env.AI.run<typeof MODEL_ID>(
-			MODEL_ID,
-			inputs,
+		const stream =
+			await env.AI.run<typeof MODEL_ID>(
+				MODEL_ID,
+				inputs,
+			);
+
+		return new Response(
+			stream,
+			{
+				headers: {
+					"Content-Type":
+						"text/event-stream; charset=utf-8",
+
+					"Cache-Control":
+						"no-cache",
+
+					Connection:
+						"keep-alive",
+				},
+			},
 		);
 
-		return new Response(stream, {
-			headers: {
-				"Content-Type":
-					"text/event-stream; charset=utf-8",
-
-				"Cache-Control": "no-cache",
-
-				Connection: "keep-alive",
-			},
-		});
 	} catch (error) {
+
 		console.error(
 			"Nexora AI error:",
 			error,
