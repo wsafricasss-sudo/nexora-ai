@@ -1,6 +1,7 @@
 import { Env, ChatMessage } from "./types";
 
-const MODEL_ID = "@cf/meta/llama-3.1-8b-instruct-fp8";
+const MODEL_ID =
+	"@cf/meta/llama-3.1-8b-instruct-fp8";
 
 type TavilyResult = {
 	title?: string;
@@ -27,7 +28,7 @@ type NexoraEnv = Env & {
 
 const BASE_SYSTEM_PROMPT = `
 Você é o Nexora AI, um assistente virtual inteligente,
-amigável, moderno e útil.
+amigável, moderno, natural e útil.
 
 IDENTIDADE:
 
@@ -76,14 +77,55 @@ REGRAS GERAIS:
 - Se o usuário escrever em português, responda em português.
 - Se escrever em inglês, responda em inglês.
 - Se escrever em outro idioma, adapte-se ao idioma quando possível.
-- Seja claro, natural e objetivo.
+- Seja natural, amigável, claro e objetivo.
+- Converse de maneira semelhante a um assistente moderno.
+- Responda diretamente ao que o usuário disse.
+- Não mude de assunto sem motivo.
+- Não introduza assuntos aleatórios.
 - Não invente informações.
 - Quando não tiver certeza, diga claramente.
 - Não apresente hipóteses como fatos.
 - Adapte a explicação ao nível do usuário.
 - Use exemplos quando ajudarem.
 - Organize respostas longas com títulos e tópicos.
-- Seja amigável, profissional e útil.
+- Evite respostas desnecessariamente longas para perguntas simples.
+
+CONVERSA NATURAL:
+
+Se o usuário apenas cumprimentar, responda naturalmente.
+
+Exemplos:
+
+Usuário:
+"Olá"
+
+Resposta adequada:
+"Olá! 👋 Tudo bem? Como posso ajudar?"
+
+Usuário:
+"Bom dia"
+
+Resposta adequada:
+"Bom dia! 👋 Como posso ajudar?"
+
+Usuário:
+"Tudo bem?"
+
+Resposta adequada:
+"Tudo bem! 😊 E contigo? Em que posso ajudar?"
+
+Não transforme uma saudação em uma pesquisa.
+
+Uma palavra como "Olá" deve ser entendida como saudação,
+e não como uma empresa, pessoa, produto ou outro assunto
+com nome semelhante.
+
+Se o usuário fizer uma pergunta ou mencionar claramente
+um assunto, responda sobre esse assunto.
+
+Nunca invente uma pergunta que o usuário não fez.
+Nunca responda a um assunto que não tenha relação com
+a mensagem do usuário.
 `;
 
 /**
@@ -205,22 +247,118 @@ Você está no modo PESQUISA do Nexora AI.
 
 Este modo possui acesso à pesquisa Web em tempo real.
 
-Quando receber informações provenientes da Web:
+Seu objetivo é pesquisar, verificar, analisar e explicar
+informações de forma confiável.
 
-- Analise as informações antes de responder.
+PESQUISA WEB:
+
+Quando uma pesquisa Web for realizada:
+
+- Analise os resultados antes de responder.
+- Use somente informações relevantes para a pergunta.
+- Não mude o assunto com base nos resultados.
 - Diferencie fatos de interpretações.
 - Não trate uma única fonte como verdade absoluta quando
   houver possibilidade de comparação.
 - Não invente fontes.
 - Não invente dados.
+- Não invente URLs.
+- Não invente estudos.
+- Não invente notícias.
+- Não invente acontecimentos.
 - Não diga que uma informação é atual sem uma pesquisa Web.
 - Quando as fontes apresentarem informações diferentes,
   explique a diferença.
 - Dê prioridade a fontes relevantes e confiáveis.
-- Para notícias, acontecimentos atuais e informações recentes,
-  dê preferência a informações publicadas recentemente.
-- Quando apropriado, informe as fontes utilizadas.
+- Para notícias e acontecimentos atuais, dê preferência
+  a fontes recentes e confiáveis.
+- Quando apropriado, mencione as fontes utilizadas.
 - Nunca diga que pesquisou na Web se a pesquisa não aconteceu.
+
+INTENÇÃO DO USUÁRIO:
+
+Antes de pesquisar, compreenda o que o usuário realmente quer.
+
+Nem toda mensagem precisa de pesquisa Web.
+
+Se o usuário estiver apenas conversando ou cumprimentando,
+responda naturalmente.
+
+Exemplos:
+
+"Olá"
+→ Responda à saudação.
+
+"Oi"
+→ Responda à saudação.
+
+"Bom dia"
+→ Responda à saudação.
+
+"Tudo bem?"
+→ Converse normalmente.
+
+"Como estás?"
+→ Responda naturalmente.
+
+Não transforme mensagens casuais em pesquisas.
+
+IMPORTANTE:
+
+A palavra "Olá" significa uma saudação quando usada
+como saudação.
+
+Não interprete automaticamente "Olá" como:
+- Ola, empresa
+- uma pessoa
+- um produto
+- uma marca
+- um serviço
+- qualquer outro assunto
+
+Somente pesquise uma entidade quando o usuário deixar claro
+que está perguntando sobre essa entidade.
+
+Exemplos:
+
+"Quem é a Ola?"
+→ Pesquise sobre a entidade mencionada.
+
+"O que é a empresa Ola?"
+→ Pesquise sobre a empresa Ola.
+
+"Qual é a população de Portugal?"
+→ Pesquise a informação solicitada.
+
+"Quais são as notícias de hoje?"
+→ Pesquise notícias atuais.
+
+"Quem é Cristiano Ronaldo?"
+→ Pesquise sobre Cristiano Ronaldo.
+
+"Qual é o preço atual do iPhone?"
+→ Pesquise o preço atual.
+
+"Explique a inteligência artificial."
+→ Responda sobre inteligência artificial e, quando apropriado,
+use os resultados da pesquisa para complementar a resposta.
+
+REGRA PRINCIPAL:
+
+A pesquisa Web deve servir à pergunta do usuário.
+
+Nunca use resultados encontrados na Web como motivo para
+começar a falar de outro assunto.
+
+Se a pergunta for simples e conversacional, converse.
+
+Se houver uma pergunta factual ou um assunto para pesquisar,
+pesquise e responda ao assunto solicitado.
+
+Se os resultados forem insuficientes ou conflitantes,
+explique isso claramente.
+
+Nunca invente informações para preencher lacunas.
 
 Você pode pesquisar sobre:
 - Notícias
@@ -250,7 +388,9 @@ Seu objetivo principal neste modo é PESQUISAR, ANALISAR E EXPLICAR.
  * ============================================================
  */
 
-function getSystemPrompt(mode?: string): string {
+function getSystemPrompt(
+	mode?: string,
+): string {
 	switch (mode) {
 		case "study":
 			return STUDY_SYSTEM_PROMPT;
@@ -268,6 +408,69 @@ function getSystemPrompt(mode?: string): string {
 
 /**
  * ============================================================
+ * DETECÇÃO DE CONVERSA NORMAL
+ * ============================================================
+ */
+
+function isCasualConversation(
+	message: string,
+): boolean {
+	const normalized =
+		message
+			.toLowerCase()
+			.normalize("NFD")
+			.replace(
+				/[\u0300-\u036f]/g,
+				"",
+			)
+			.trim()
+			.replace(
+				/[!?.,;:]+$/g,
+				"",
+			)
+			.replace(
+				/\s+/g,
+				" ",
+			);
+
+	if (!normalized) {
+		return true;
+	}
+
+	const casualMessages = new Set([
+		"ola",
+		"oi",
+		"oie",
+		"hey",
+		"hello",
+		"bom dia",
+		"boa tarde",
+		"boa noite",
+		"tudo bem",
+		"como estas",
+		"como voce esta",
+		"como voce ta",
+		"como vai",
+		"tudo certo",
+		"tudo tranquilo",
+		"como voce esta hoje",
+		"obrigado",
+		"obrigada",
+		"valeu",
+		"obrigado pela ajuda",
+		"obrigada pela ajuda",
+		"ate logo",
+		"ate mais",
+		"adeus",
+	]);
+
+	return casualMessages.has(
+		normalized,
+	);
+}
+
+/**
+ * ============================================================
  * PESQUISA WEB — TAVILY
  * ============================================================
  */
@@ -276,7 +479,8 @@ async function searchWeb(
 	query: string,
 	env: NexoraEnv,
 ): Promise<TavilyResponse | null> {
-	const apiKey = env.TAVILY_API_KEY;
+	const apiKey =
+		env.TAVILY_API_KEY;
 
 	if (!apiKey) {
 		console.error(
@@ -287,36 +491,43 @@ async function searchWeb(
 	}
 
 	try {
-		const response = await fetch(
-			"https://api.tavily.com/search",
-			{
-				method: "POST",
+		const response =
+			await fetch(
+				"https://api.tavily.com/search",
+				{
+					method: "POST",
 
-				headers: {
-					"Content-Type":
-						"application/json",
+					headers: {
+						"Content-Type":
+							"application/json",
 
-					Authorization:
-						`Bearer ${apiKey}`,
+						Authorization:
+							`Bearer ${apiKey}`,
+					},
+
+					body: JSON.stringify({
+						query,
+
+						search_depth:
+							"basic",
+
+						topic:
+							"general",
+
+						max_results:
+							5,
+
+						include_answer:
+							true,
+
+						include_raw_content:
+							false,
+
+						include_images:
+							false,
+					}),
 				},
-
-				body: JSON.stringify({
-					query,
-
-					search_depth: "basic",
-
-					topic: "general",
-
-					max_results: 5,
-
-					include_answer: true,
-
-					include_raw_content: false,
-
-					include_images: false,
-				}),
-			},
-		);
+			);
 
 		if (!response.ok) {
 			const errorText =
@@ -355,40 +566,48 @@ function buildWebContext(
 	search: TavilyResponse,
 ): string {
 	const results =
-		Array.isArray(search.results)
+		Array.isArray(
+			search.results,
+		)
 			? search.results
 			: [];
 
-	if (results.length === 0) {
+	if (
+		results.length === 0
+	) {
 		return "";
 	}
 
-	const sources = results
-		.map((result, index) => {
-			const title =
-				result.title ||
-				"Fonte sem título";
+	const sources =
+		results
+			.map(
+				(result, index) => {
+					const title =
+						result.title ||
+						"Fonte sem título";
 
-			const url =
-				result.url ||
-				"URL não disponível";
+					const url =
+						result.url ||
+						"URL não disponível";
 
-			const content =
-				result.content ||
-				"Conteúdo não disponível";
+					const content =
+						result.content ||
+						"Conteúdo não disponível";
 
-			return `
+					return `
 FONTE ${index + 1}
 Título: ${title}
 URL: ${url}
 Conteúdo:
 ${content}
 `;
-		})
-		.join("\n");
+				},
+			)
+			.join("\n");
 
 	const answer =
-		typeof search.answer === "string"
+		typeof search.answer ===
+		"string"
 			? search.answer
 			: "";
 
@@ -407,15 +626,20 @@ ${sources}
 INSTRUÇÕES PARA USAR A WEB
 ============================================================
 
-Use os resultados acima como informação externa recente.
+Use os resultados acima como informação externa.
+
+Use somente as informações que sejam relevantes
+para a pergunta do usuário.
+
+Não mude o assunto da pergunta.
 
 Não invente informações que não estejam nos resultados
 ou no seu conhecimento confiável.
 
 Se houver conflito entre fontes, informe o usuário.
 
-Quando usar uma informação encontrada na Web, mencione
-as fontes relevantes na resposta.
+Quando usar uma informação encontrada na Web,
+mencione as fontes relevantes quando apropriado.
 
 Não diga que uma fonte afirma algo que ela não apresenta.
 
@@ -511,8 +735,10 @@ async function handleChatRequest(
 		 * PESQUISA WEB
 		 * ========================================================
 		 *
-		 * Só pesquisa automaticamente quando o usuário está
-		 * no modo PESQUISA.
+		 * Só pesquisa automaticamente no modo PESQUISA.
+		 *
+		 * Mensagens puramente conversacionais, como "Olá",
+		 * não são enviadas para a pesquisa Web.
 		 */
 
 		let webContext = "";
@@ -538,7 +764,12 @@ async function handleChatRequest(
 				const searchQuery =
 					lastUserMessage.content.trim();
 
-				if (searchQuery) {
+				if (
+					searchQuery &&
+					!isCasualConversation(
+						searchQuery,
+					)
+				) {
 					const search =
 						await searchWeb(
 							searchQuery,
@@ -555,6 +786,12 @@ async function handleChatRequest(
 			}
 		}
 
+		/**
+		 * ========================================================
+		 * PROMPT FINAL
+		 * ========================================================
+		 */
+
 		const finalSystemPrompt =
 			systemPrompt +
 			(webContext
@@ -570,6 +807,12 @@ async function handleChatRequest(
 				},
 				...recentMessages,
 			];
+
+		/**
+		 * ========================================================
+		 * CLOUDFLARE WORKERS AI
+		 * ========================================================
+		 */
 
 		const inputs = {
 			messages:
