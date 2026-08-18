@@ -1,30 +1,45 @@
 /**
- * Nexora AI — Chat Frontend
+ * ============================================================
+ * NEXORA AI — CHAT FRONTEND
+ * ============================================================
  *
  * Mantém:
- * - 3 modos: Estudar, Negócios e Pesquisa
+ * - Estudar
+ * - Negócios
+ * - Pesquisa
  * - Histórico local
  * - Conversas separadas por modo
  * - Nova conversa
  * - Apagar conversa
  * - Título automático
- * - Streaming da resposta
- * - Ligação com /api/chat
+ * - Streaming
+ * - /api/chat
  *
- * Removido:
- * - Câmera
- * - Galeria
- * - Upload de imagens
- * - Pré-visualização de imagens
+ * Melhorias:
+ * - Respostas formatadas
+ * - Títulos
+ * - Listas
+ * - Negrito
+ * - Código
+ * - Parágrafos organizados
+ * - Scroll livre durante a resposta
+ * - Auto-scroll inteligente
+ * - Não prende o usuário no fim da conversa
  */
 
 // ============================================================
 // DOM
 // ============================================================
 
-const chatMessages = document.getElementById("chat-messages");
-const userInput = document.getElementById("user-input");
-const sendButton = document.getElementById("send-button");
+const chatMessages =
+	document.getElementById("chat-messages");
+
+const userInput =
+	document.getElementById("user-input");
+
+const sendButton =
+	document.getElementById("send-button");
+
 const typingIndicator =
 	document.getElementById("typing-indicator");
 
@@ -61,7 +76,8 @@ const MODES = {
 		welcome:
 			"Olá! 👋 Eu sou a Nexora AI.\n\n" +
 			"Você está no modo Pesquisa.\n\n" +
-			"Posso ajudar a compreender, organizar e analisar informações.\n\n" +
+			"Posso ajudar a pesquisar, compreender, " +
+			"organizar e analisar informações.\n\n" +
 			"Como posso ajudar?",
 	},
 };
@@ -72,28 +88,41 @@ const MODES = {
 
 let currentMode = "research";
 
-let conversations = loadConversations();
+let conversations =
+	loadConversations();
 
 let currentConversationId = null;
 
 let isProcessing = false;
 
+/*
+ * Controla se o usuário está acompanhando o final
+ * da conversa ou se subiu para ler mensagens anteriores.
+ */
+let userIsNearBottom = true;
+
+const BOTTOM_THRESHOLD = 100;
+
 // ============================================================
 // ARMAZENAMENTO
 // ============================================================
 
-const STORAGE_KEY = "nexora_ai_conversations_v1";
+const STORAGE_KEY =
+	"nexora_ai_conversations_v1";
 
 function loadConversations() {
 	try {
 		const saved =
-			localStorage.getItem(STORAGE_KEY);
+			localStorage.getItem(
+				STORAGE_KEY,
+			);
 
 		if (!saved) {
 			return [];
 		}
 
-		const parsed = JSON.parse(saved);
+		const parsed =
+			JSON.parse(saved);
 
 		if (!Array.isArray(parsed)) {
 			return [];
@@ -114,7 +143,9 @@ function saveConversations() {
 	try {
 		localStorage.setItem(
 			STORAGE_KEY,
-			JSON.stringify(conversations),
+			JSON.stringify(
+				conversations,
+			),
 		);
 	} catch (error) {
 		console.error(
@@ -122,6 +153,52 @@ function saveConversations() {
 			error,
 		);
 	}
+}
+
+// ============================================================
+// SCROLL INTELIGENTE
+// ============================================================
+
+function isNearBottom() {
+	if (!chatMessages) {
+		return true;
+	}
+
+	return (
+		chatMessages.scrollHeight -
+			chatMessages.scrollTop -
+			chatMessages.clientHeight <=
+		BOTTOM_THRESHOLD
+	);
+}
+
+function updateScrollState() {
+	userIsNearBottom =
+		isNearBottom();
+}
+
+function scrollToBottom(force = false) {
+	if (!chatMessages) {
+		return;
+	}
+
+	if (
+		force ||
+		userIsNearBottom
+	) {
+		chatMessages.scrollTop =
+			chatMessages.scrollHeight;
+	}
+}
+
+if (chatMessages) {
+	chatMessages.addEventListener(
+		"scroll",
+		updateScrollState,
+		{
+			passive: true,
+		},
+	);
 }
 
 // ============================================================
@@ -142,9 +219,12 @@ function createConversationId() {
 // CONVERSAS
 // ============================================================
 
-function createConversation(mode = currentMode) {
+function createConversation(
+	mode = currentMode,
+) {
 	const modeInfo =
-		MODES[mode] || MODES.research;
+		MODES[mode] ||
+		MODES.research;
 
 	const conversation = {
 		id: createConversationId(),
@@ -160,12 +240,15 @@ function createConversation(mode = currentMode) {
 		messages: [
 			{
 				role: "assistant",
-				content: modeInfo.welcome,
+				content:
+					modeInfo.welcome,
 			},
 		],
 	};
 
-	conversations.unshift(conversation);
+	conversations.unshift(
+		conversation,
+	);
 
 	currentConversationId =
 		conversation.id;
@@ -183,11 +266,14 @@ function getCurrentConversation() {
 	);
 }
 
-function getConversationsByMode(mode) {
+function getConversationsByMode(
+	mode,
+) {
 	return conversations
 		.filter(
 			(conversation) =>
-				conversation.mode === mode,
+				conversation.mode ===
+				mode,
 		)
 		.sort(
 			(a, b) =>
@@ -306,6 +392,165 @@ function ensureCurrentConversation() {
 }
 
 // ============================================================
+// FORMATAÇÃO DAS RESPOSTAS
+// ============================================================
+
+function escapeHtml(text) {
+	return String(text)
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#039;");
+}
+
+function formatAssistantText(text) {
+	if (!text) {
+		return "";
+	}
+
+	let source = String(text);
+
+	/*
+	 * Protege blocos de código antes de processar
+	 * o restante da mensagem.
+	 */
+
+	const codeBlocks = [];
+
+	source = source.replace(
+		/```([\s\S]*?)```/g,
+		(match, code) => {
+			const id =
+				`___NEXORA_CODE_${codeBlocks.length}___`;
+
+			codeBlocks.push(
+				`<pre class="nexora-code"><code>${escapeHtml(
+					code.trim(),
+				)}</code></pre>`,
+			);
+
+			return id;
+		},
+	);
+
+	source = escapeHtml(source);
+
+	/*
+	 * Títulos Markdown
+	 */
+
+	source = source.replace(
+		/^### (.+)$/gm,
+		'<h4 class="nexora-heading">$1</h4>',
+	);
+
+	source = source.replace(
+		/^## (.+)$/gm,
+		'<h3 class="nexora-heading">$1</h3>',
+	);
+
+	source = source.replace(
+		/^# (.+)$/gm,
+		'<h2 class="nexora-heading">$1</h2>',
+	);
+
+	/*
+	 * Negrito
+	 */
+
+	source = source.replace(
+		/\*\*(.+?)\*\*/g,
+		"<strong>$1</strong>",
+	);
+
+	/*
+	 * Código inline
+	 */
+
+	source = source.replace(
+		/`([^`]+)`/g,
+		'<code class="nexora-inline-code">$1</code>',
+	);
+
+	/*
+	 * Listas com marcadores
+	 */
+
+	source = source.replace(
+		/^(?:[-*•])\s+(.+)$/gm,
+		'<li>$1</li>',
+	);
+
+	source = source.replace(
+		/(<li>[\s\S]*?<\/li>)(?=\s*(?:<li>|$))/g,
+		"$1",
+	);
+
+	source = source.replace(
+		/(<li>.*?<\/li>(?:\s*<li>.*?<\/li>)*)/gs,
+		'<ul class="nexora-list">$1</ul>',
+	);
+
+	/*
+	 * Listas numeradas
+	 */
+
+	source = source.replace(
+		/^\d+\.\s+(.+)$/gm,
+		'<li>$1</li>',
+	);
+
+	/*
+	 * Quebras de linha.
+	 */
+
+	source = source.replace(
+		/\n{3,}/g,
+		"\n\n",
+	);
+
+	source = source.replace(
+		/\n\n/g,
+		"</p><p>",
+	);
+
+	source = source.replace(
+		/\n/g,
+		"<br>",
+	);
+
+	source =
+		"<p>" +
+		source +
+		"</p>";
+
+	/*
+	 * Remove parágrafos vazios.
+	 */
+
+	source = source.replace(
+		/<p>\s*<\/p>/g,
+		"",
+	);
+
+	/*
+	 * Restaura blocos de código.
+	 */
+
+	codeBlocks.forEach(
+		(codeBlock, index) => {
+			source = source.replace(
+				`___NEXORA_CODE_${index}___`,
+				codeBlock,
+			);
+		},
+	);
+
+	return source;
+}
+
+// ============================================================
 // RENDER DA CONVERSA
 // ============================================================
 
@@ -325,16 +570,19 @@ function renderConversation(
 		addMessageToChat(
 			message.role,
 			message.content,
+			false,
 		);
 	}
 
-	chatMessages.scrollTop =
-		chatMessages.scrollHeight;
+	userIsNearBottom = true;
+
+	scrollToBottom(true);
 }
 
 function addMessageToChat(
 	role,
 	content,
+	autoScroll = true,
 ) {
 	const messageEl =
 		document.createElement("div");
@@ -343,10 +591,20 @@ function addMessageToChat(
 		`message ${role}-message`;
 
 	const paragraph =
-		document.createElement("p");
+		document.createElement("div");
 
-	paragraph.textContent =
-		content;
+	paragraph.className =
+		"nexora-message-content";
+
+	if (role === "assistant") {
+		paragraph.innerHTML =
+			formatAssistantText(
+				content,
+			);
+	} else {
+		paragraph.textContent =
+			content;
+	}
 
 	messageEl.appendChild(
 		paragraph,
@@ -356,8 +614,9 @@ function addMessageToChat(
 		messageEl,
 	);
 
-	chatMessages.scrollTop =
-		chatMessages.scrollHeight;
+	if (autoScroll) {
+		scrollToBottom();
+	}
 
 	return messageEl;
 }
@@ -412,6 +671,10 @@ function createHistoryPanel() {
 		"nexora-history-style";
 
 	style.textContent = `
+		/* =====================================================
+		   HISTÓRICO
+		===================================================== */
+
 		#nexora-history {
 			position: fixed;
 			top: 0;
@@ -564,10 +827,101 @@ function createHistoryPanel() {
 			cursor: pointer;
 		}
 
+		/* =====================================================
+		   TEXTO DAS RESPOSTAS
+		===================================================== */
+
+		.nexora-message-content {
+			line-height: 1.7;
+			overflow-wrap: anywhere;
+		}
+
+		.nexora-message-content p {
+			margin: 0 0 12px 0;
+		}
+
+		.nexora-message-content p:last-child {
+			margin-bottom: 0;
+		}
+
+		.nexora-heading {
+			margin: 18px 0 10px;
+			line-height: 1.35;
+			font-weight: 700;
+		}
+
+		.nexora-heading:first-child {
+			margin-top: 0;
+		}
+
+		.nexora-list {
+			margin: 10px 0 14px 22px;
+			padding: 0;
+		}
+
+		.nexora-list li {
+			margin-bottom: 7px;
+			padding-left: 3px;
+		}
+
+		.nexora-inline-code {
+			padding: 2px 6px;
+			border-radius: 6px;
+
+			background: rgba(0, 0, 0, 0.3);
+
+			font-family:
+				ui-monospace,
+				SFMono-Regular,
+				Menlo,
+				Monaco,
+				Consolas,
+				monospace;
+
+			font-size: 0.9em;
+		}
+
+		.nexora-code {
+			margin: 14px 0;
+
+			padding: 14px;
+
+			border: 1px solid #263a55;
+			border-radius: 10px;
+
+			background: #08111f;
+
+			overflow-x: auto;
+
+			white-space: pre;
+
+			line-height: 1.55;
+		}
+
+		.nexora-code code {
+			font-family:
+				ui-monospace,
+				SFMono-Regular,
+				Menlo,
+				Monaco,
+				Consolas,
+				monospace;
+
+			font-size: 13px;
+		}
+
+		/* =====================================================
+		   MOBILE
+		===================================================== */
+
 		@media (max-width: 600px) {
 			#nexora-history {
 				width: 85vw;
 				max-width: 320px;
+			}
+
+			.nexora-code {
+				font-size: 12px;
 			}
 		}
 	`;
@@ -592,7 +946,9 @@ function createHistoryPanel() {
 	toggle.addEventListener(
 		"click",
 		() => {
-			panel.classList.toggle("open");
+			panel.classList.toggle(
+				"open",
+			);
 		},
 	);
 
@@ -676,7 +1032,9 @@ function renderHistory() {
 			conversation.id ===
 			currentConversationId
 		) {
-			item.classList.add("active");
+			item.classList.add(
+				"active",
+			);
 		}
 
 		const content =
@@ -743,7 +1101,9 @@ function renderHistory() {
 		);
 
 		item.appendChild(content);
-		item.appendChild(deleteButton);
+		item.appendChild(
+			deleteButton,
+		);
 
 		item.addEventListener(
 			"click",
@@ -945,7 +1305,10 @@ userInput.addEventListener(
 		this.style.height = "auto";
 
 		this.style.height =
-			this.scrollHeight + "px";
+			Math.min(
+				this.scrollHeight,
+				150,
+			) + "px";
 	},
 );
 
@@ -1007,6 +1370,13 @@ async function sendMessage() {
 		"visible",
 	);
 
+	/*
+	 * Quando o usuário envia uma mensagem,
+	 * começamos acompanhando o final.
+	 */
+
+	userIsNearBottom = true;
+
 	conversation.messages.push({
 		role: "user",
 		content: message,
@@ -1025,6 +1395,7 @@ async function sendMessage() {
 	addMessageToChat(
 		"user",
 		message,
+		true,
 	);
 
 	userInput.value = "";
@@ -1038,7 +1409,12 @@ async function sendMessage() {
 			"message assistant-message";
 
 		const assistantTextEl =
-			document.createElement("p");
+			document.createElement(
+				"div",
+			);
+
+		assistantTextEl.className =
+			"nexora-message-content";
 
 		assistantMessageEl.appendChild(
 			assistantTextEl,
@@ -1048,8 +1424,7 @@ async function sendMessage() {
 			assistantMessageEl,
 		);
 
-		chatMessages.scrollTop =
-			chatMessages.scrollHeight;
+		scrollToBottom(true);
 
 		const response =
 			await fetch(
@@ -1091,16 +1466,27 @@ async function sendMessage() {
 			new TextDecoder();
 
 		let responseText = "";
+
 		let buffer = "";
+
 		let sawDone = false;
+
+		/*
+		 * Atualiza visualmente a resposta.
+		 *
+		 * Importante:
+		 * Se o usuário estiver no meio da conversa,
+		 * NÃO fazemos scroll.
+		 */
 
 		const flushAssistantText =
 			() => {
-				assistantTextEl.textContent =
-					responseText;
+				assistantTextEl.innerHTML =
+					formatAssistantText(
+						responseText,
+					);
 
-				chatMessages.scrollTop =
-					chatMessages.scrollHeight;
+				scrollToBottom();
 			};
 
 		while (true) {
@@ -1113,12 +1499,13 @@ async function sendMessage() {
 				break;
 			}
 
-			buffer += decoder.decode(
-				value,
-				{
-					stream: true,
-				},
-			);
+			buffer +=
+				decoder.decode(
+					value,
+					{
+						stream: true,
+					},
+				);
 
 			const parsed =
 				consumeSseEvents(
@@ -1148,7 +1535,8 @@ async function sendMessage() {
 						content =
 							jsonData.response;
 					} else if (
-						jsonData.choices?.[0]
+						jsonData
+							.choices?.[0]
 							?.delta
 							?.content
 					) {
@@ -1179,7 +1567,10 @@ async function sendMessage() {
 			}
 		}
 
-		// Tenta processar o último pedaço
+		/*
+		 * Processa o último pedaço do stream.
+		 */
+
 		if (buffer.trim()) {
 			const parsed =
 				consumeSseEvents(
@@ -1206,7 +1597,8 @@ async function sendMessage() {
 						content =
 							jsonData.response;
 					} else if (
-						jsonData.choices?.[0]
+						jsonData
+							.choices?.[0]
 							?.delta
 							?.content
 					) {
@@ -1257,6 +1649,7 @@ async function sendMessage() {
 		addMessageToChat(
 			"assistant",
 			"Não foi possível processar sua mensagem.",
+			false,
 		);
 	} finally {
 		typingIndicator.classList.remove(
@@ -1269,6 +1662,14 @@ async function sendMessage() {
 		sendButton.disabled = false;
 
 		userInput.focus();
+
+		/*
+		 * Só voltamos para o final automaticamente
+		 * se o usuário ainda estiver perto do final.
+		 */
+		if (userIsNearBottom) {
+			scrollToBottom(true);
+		}
 	}
 }
 
@@ -1288,7 +1689,9 @@ function consumeSseEvents(buffer) {
 
 	while (
 		(eventEndIndex =
-			remaining.indexOf("\n\n")) !== -1
+			remaining.indexOf(
+				"\n\n",
+			)) !== -1
 	) {
 		const rawEvent =
 			remaining.slice(
